@@ -2,10 +2,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter&family=Rubik:ital,wght@0,400;0,700;1,400&display=swap");
 
 :root {
-   --brand: #1c034ef0;
-   --action: #8a8f8e;
+   --brand: #DD9AC2;
+   --action: #dfaed1;
    --white: #ffffff;
-   --base-light: #c4c4c6;
+   --base-light: #eacbe6;
    --base-dark: #0d0711;
    --black: #111111;
 }
@@ -304,7 +304,7 @@ footer {
 }
 
 .socials-icon {
-  width: 80px;
+  width: 180px;
   height: 40px;
 }
 

@@ -2,12 +2,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter&family=Rubik:ital,wght@0,400;0,700;1,400&display=swap");
 
 :root {
-   --brand: #DD9AC2;
-   --action: #dfaed1;
+   --brand: #05445e;
+   --action: #8da2a5;
    --white: #ffffff;
-   --base-light: #eacbe6;
-   --other-pages-base: #DD9AC2;
-   --other-sections-base: #dfaed1;
+   --base-light: #a7c7cb;
+   --other-pages-base: #05445e;
+   --other-sections-base: #a7c7cb;
    --base-dark: #0d0711;
    --black: #111111;
 }

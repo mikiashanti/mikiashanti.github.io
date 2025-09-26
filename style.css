@@ -3,11 +3,11 @@
 
 :root {
    --brand: #05445e;
-   --action: #8da2a5;
+   --action: #e9e6e6;
    --white: #ffffff;
-   --base-light: #a7c7cb;
+   --base-light: #36a6b3;
    --other-pages-base: #05445e;
-   --other-sections-base: #a7c7cb;
+   --other-sections-base: #36a6b3;
    --base-dark: #0d0711;
    --black: #111111;
 }
@@ -173,10 +173,14 @@ a:visited {
 
 /* .hero */
 .hero {
-  background-color: var(--brand);
+  background-image:url("img/geo.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   padding: 56px 16px;
   border-radius: 10px;
   margin: 5px 10px;
+  color:#ffffff
 }
 
 .hero h1 {
@@ -202,7 +206,10 @@ a:visited {
 
 /* other pages */
 .other-pages {
-  background-color: var(--other-pages-base);
+  background-image: url("img/geo.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   padding: 56px 16px;
   border-radius: 10px;
   margin: 5px 10px;
@@ -223,6 +230,40 @@ a:visited {
   filter: contrast(150%);
 }
 
+/* media-container */
+.media-container {
+  padding: 40px 16px;
+  border-radius: 10px;
+  margin: 5px 10px;
+
+.media-flex {
+  a:link {
+    color:#ffffff
+  };
+  a:visited {
+    color:#ffffff
+  };
+}
+}
+
+/* projects-container */
+
+.projects-container {
+  padding: 40px 16px;
+  border-radius: 10px;
+  margin: 5px 10px;
+
+.articles-flex {
+  a:link {
+    color:#ffffff
+  };
+  a:visited {
+    color:#ffffff
+  };
+}
+
+}
+
 /* .articles-container  */
 @media (min-width: 768px) {
   .hero {
@@ -237,6 +278,23 @@ a:visited {
   .projects-media-newsletter {
     display: flex;
   }
+  .articles-flex {
+    display: flex;
+    align-items: top;
+    justify-content: stretch;
+  }
+
+  .other-flex {
+    display: flex;
+    align-items: top;
+    justify-content: stretch;
+  }
+
+  .media-flex {
+    display: flex;
+    align-items: top;
+    justify-content: stretch;
+  }
 }
 
 /* .article */
@@ -246,7 +304,7 @@ article {
   border-radius: 10px;
   margin: 5px 10px;
   transition: all 0.3s ease;
-  color:#0d0711;
+  color:#ffffff;
     a:link {
     color: #0b0a0a;
   }
@@ -289,7 +347,7 @@ article p {
 
 /* .contact-form */
 .contact-form {
-  padding: 48px 16px;
+  padding: 60px 24px;
   border-radius: 10px;
   margin: 5px 10px;
 }
@@ -314,7 +372,7 @@ article p {
 }
 
 .contact-form h2 {
-  color: var(--base-dark);
+  color: var(--white);
   margin-bottom: 16px;
 }
 
@@ -332,7 +390,7 @@ article p {
   }
 
   .contact-form form {
-      max-width: 60%;
+      max-width: 45%;
       margin: 40px auto;
   }
 }

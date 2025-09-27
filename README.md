@@ -1,4 +1,5 @@
-Michaela Gyasi-Agyei - Portfolio Task
+Michaela Gyasi-Agyei - Portfolio Task  
+
 ​
 (mikiashanti.github.io)
 ​

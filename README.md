@@ -1,30 +1,21 @@
-#  your_name_here - Portfolio Task
+Michaela Gyasi-Agyei - Portfolio Task
 ​
-[My portfolio site](link_to_your_site)
+[My portfolio site](mikiashanti.github,io)
 ​
 ## Project Requirements
 
 ### Content
- Add a short paragraph describing the features below. What aesthetic and technical choices did you make? 
-- [ ] At least one profile picture
-- [ ] Biography (at least 100 words)
-- [ ] Functional Contact Form
-- [ ] "Projects" section
-- [ ] Links to external sites, e.g. GitHub and LinkedIn.
 ​
+My portfolio site includes a profile picture, and a 100-word biography in the index.html file. I have included a contact form in my contact.html file. I have a project section in my projects.html file. In the footer of each webpage I have included links to my LinkedIn and Github pages. 
+
 ### Technical
- Add a short paragraph describing the features below. What strategies or design decisions did you work from? 
-- [ ] At least 2 web pages.
-- [ ] Version controlled with Git
-- [ ] Deployed on GitHub pages.
-- [ ] Implements responsive design principles.
-- [ ] Uses semantic HTML.
+
+I have five web pages in my portfolio: the index or home page, and projects, media, newsletteer and contact pages. I have included navigation for desktop and mobile versions of the website, which links to the projects, media, newsletter and contact pages. If the user is not on the home page, there is also an option to navigate back. My portfolio has been version controlled with Git and deployed on GitHub pages. I have also implemented responsive design principles, including using flexbox to format my index, projects and media pages.
 
 ### Bonus (optional)
- Add a short paragraph describing the features below, if you included any. 
-- [ ] Different styles for active, hover and focus states.
-- [ ] Include JavaScript to add some dynamic elements to your site. (Extra tricky!)
 ​
+I have different styles for hover states. In the hover state, the buttons on my index page have a shadow and the articles on my index, media and projects pages change colour. I have used JavaScript to the code for my hamburger button, so that the navigation options are revealed or hidden when the hamburger button is clicked.
+
 ### Screenshots
 > Please include the following:
 > - The different pages and features of your website on mobile, tablet and desktop screen sizes (multiple screenshots per page and screen size).

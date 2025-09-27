@@ -1,7 +1,6 @@
 Michaela Gyasi-Agyei - Portfolio Task
 ​
-[My portfolio site]
-(mikiashanti.github,io)
+(mikiashanti.github.io)
 ​
 ## Project Requirements
 

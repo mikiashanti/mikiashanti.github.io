@@ -34,3 +34,4 @@
 
 ####  image_title_goes_here 
 ![Put a description of your image here](./relative_path_to_file)
+![Index page](/img/screenshots/contact_ipad.png)

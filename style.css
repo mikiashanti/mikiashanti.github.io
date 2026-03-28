@@ -1,3 +1,8 @@
+/* ============================================================
+   Michaela Gyasi-Agyei — Portfolio
+   Theme: Editorial Minimalism · Red Accent
+   ============================================================ */
+
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap");
 
 /* ── Design Tokens ────────────────────────────────────────── */
@@ -67,7 +72,7 @@ header .mobile-header {
 }
 
 header .mobile-header::before {
-  content: "MGA";
+  content: "   ";
   font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 900;
@@ -864,10 +869,29 @@ h2 + p {
   margin-bottom: 6px;
 }
 
-.expertise-subsection .placeholder-text {
+/* Dash-bulleted list inside expertise cards */
+.expertise-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.expertise-list li {
   font-size: 0.85rem;
-  color: #9ca3af;
-  font-style: italic;
+  color: var(--text);
   line-height: 1.6;
-  font-weight: 300;
+  font-weight: 400;
+  padding-left: 16px;
+  position: relative;
+}
+
+.expertise-list li::before {
+  content: "-";
+  position: absolute;
+  left: 0;
+  color: var(--red);
+  font-weight: 700;
 }

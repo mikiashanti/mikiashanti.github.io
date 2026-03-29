@@ -1,0 +1,114 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{padding:1rem 0;font-family:var(--font-sans)}
+.top-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.btn{padding:5px 12px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer}
+.btn.on{background:var(--color-background-info);border-color:var(--color-border-info);color:var(--color-text-info);font-weight:500}
+.btn:hover:not(.on){background:var(--color-background-secondary)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-secondary)}
+.ld{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+#map-wrap{position:relative;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:visible;background:var(--color-background-secondary)}
+#map-wrap svg{display:block;width:100%;height:auto}
+.country{stroke:#fff;stroke-width:0.4;cursor:pointer;transition:opacity .12s}
+.country:hover{opacity:.7;stroke-width:1}
+.tip{position:fixed;display:none;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:12px 14px;font-size:12px;max-width:260px;pointer-events:none;z-index:9999}
+.tip h4{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px}
+.tip-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.badge{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:500}
+.b-both{background:#EEEDFE;color:#3C3489}.b-ai{background:#E6F1FB;color:#0C447C}.b-cyber{background:#E1F5EE;color:#085041}.b-dev{background:#FAEEDA;color:#633806}.b-none{background:#F1EFE8;color:#5F5E5A}
+.tip-row{display:flex;gap:6px;margin-top:4px;font-size:11px;line-height:1.5}
+.tip-row strong{flex-shrink:0;width:36px;font-size:10px;font-weight:500}
+.tip-src{font-size:10px;color:var(--color-text-tertiary);margin-top:6px;border-top:0.5px solid var(--color-border-tertiary);padding-top:5px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.sc{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px 10px}
+.sn{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.sl{font-size:10px;color:var(--color-text-secondary);margin-top:1px}
+@media(prefers-color-scheme:dark){
+.b-both{background:#3C3489;color:#CECBF6}.b-ai{background:#0C447C;color:#B5D4F4}
+.b-cyber{background:#085041;color:#9FE1CB}.b-dev{background:#633806;color:#FAC775}.b-none{background:#444441;color:#D3D1C7}
+}
+</style>
+
+<div class="wrap">
+<div class="top-row">
+  <span style="font-size:12px;color:var(--color-text-secondary)">Filter:</span>
+  <button class="btn on" data-v="all">All</button>
+  <button class="btn" data-v="ai">AI policy</button>
+  <button class="btn" data-v="cyber">Cyber strategy</button>
+  <button class="btn" data-v="both">Both</button>
+</div>
+<div class="legend">
+  <div class="li"><div class="ld" style="background:#7F77DD"></div>Both AI + Cyber</div>
+  <div class="li"><div class="ld" style="background:#378ADD"></div>AI policy only</div>
+  <div class="li"><div class="ld" style="background:#1D9E75"></div>Cyber strategy only</div>
+  <div class="li"><div class="ld" style="background:#EF9F27"></div>Policy developing</div>
+  <div class="li"><div class="ld" style="background:#B4B2A9"></div>No policy / limited data</div>
+</div>
+<div id="map-wrap">
+  <div class="tip" id="tip"></div>
+  <svg id="svg"></svg>
+</div>
+<div class="stats">
+  <div class="sc"><div class="sn" id="s-both">—</div><div class="sl">Both AI + Cyber</div></div>
+  <div class="sc"><div class="sn" id="s-ai">—</div><div class="sl">AI policy (any stage)</div></div>
+  <div class="sc"><div class="sn" id="s-cyber">—</div><div class="sl">Cyber strategy</div></div>
+  <div class="sc"><div class="sn" id="s-total">—</div><div class="sl">Countries tracked</div></div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+const POLICY={DZA:{ai:"published",cyber:"strategy",aiD:"National AI Strategy launched Dec 2024; six pillars: research, skills, infrastructure, governance; National AI Council coordinates.",cyberD:"National cybersecurity strategy and CERIST framework in place.",src:"FPF/TechHive 2024–25"},AGO:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Limited publicly available cybersecurity policy data.",src:"UNIDIR CPP"},BEN:{ai:"published",cyber:"strategy",aiD:"AI and Big Data Strategy 2023; updates institutional frameworks; one of the continent's early movers.",cyberD:"ITU GCI Tier 2 (91.54); strong cybersecurity commitments.",src:"ECDPM 2024 / Bowmans 2025"},BWA:{ai:"developing",cyber:"developing",aiD:"Windhoek Statement on AI in Southern Africa signatory; AI governance proposals emerging.",cyberD:"Developing cybersecurity framework.",src:"FPF/AU 2024"},BFA:{ai:"none",cyber:"developing",aiD:"No published national AI strategy.",cyberD:"Developing cybersecurity framework.",src:"UNIDIR CPP"},BDI:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Limited cybersecurity policy data.",src:"UNIDIR CPP"},CPV:{ai:"none",cyber:"developing",aiD:"No published national AI strategy.",cyberD:"Developing cybersecurity framework.",src:"UNIDIR CPP"},CMR:{ai:"none",cyber:"developing",aiD:"No published national AI strategy.",cyberD:"Developing cybersecurity framework.",src:"UNIDIR CPP"},CAF:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Very limited cybersecurity policy data.",src:"UNIDIR CPP"},TCD:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Limited cybersecurity policy data.",src:"UNIDIR CPP"},COM:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Very limited cybersecurity policy data.",src:"UNIDIR CPP"},COD:{ai:"developing",cyber:"limited",aiD:"Drafting AI policy per 2025 reports; no strategy published yet.",cyberD:"Limited cybersecurity policy framework.",src:"TechHive 2025"},COG:{ai:"developing",cyber:"limited",aiD:"Hosts African Centre for Research on AI (UNECA initiative, 2022).",cyberD:"Limited cybersecurity policy data.",src:"Diplo/UNECA 2022"},CIV:{ai:"published",cyber:"strategy",aiD:"Entered AI policy space March 2025; UNESCO AI Recommendation implementation.",cyberD:"National Cybersecurity Strategy 2021–2025; dedicated cybercrime law; CERT in place.",src:"TechHive 2025 / Diplo 2024"},DJI:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Limited cybersecurity policy data.",src:"UNIDIR CPP"},EGY:{ai:"published",cyber:"strategy",aiD:"2nd edition National AI Strategy 2025–2030 published Jan 2025; first edition 2019; Code of Ethics for AI; 6 pillars incl. governance; 13.4% AI adoption rate.",cyberD:"ITU GCI Tier 1, score 100; Cybersecurity Authority; proposed AI liability amendments to Cybercrimes Law.",src:"TechHive Jan 2025 / ITU GCI 2024"},GNQ:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Very limited cybersecurity policy data.",src:"UNIDIR CPP"},ERI:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Very limited cybersecurity policy data.",src:"UNIDIR CPP"},SWZ:{ai:"none",cyber:"developing",aiD:"No published national AI strategy.",cyberD:"Developing cybersecurity framework.",src:"UNIDIR CPP"},ETH:{ai:"published",cyber:"strategy",aiD:"National AI Strategy published 2024; AI Institute established; 6.8% AI adoption; finalising dedicated AI law.",cyberD:"Information Network Security Agency (INSA) operational; cybersecurity framework in place.",src:"ECDPM 2024 / Bowmans 2025"},GAB:{ai:"developing",cyber:"limited",aiD:"Draft AI policy in progress per 2025 reports.",cyberD:"Limited cybersecurity policy data.",src:"TechHive 2025"},GMB:{ai:"none",cyber:"developing",aiD:"No published national AI strategy.",cyberD:"Developing cybersecurity framework.",src:"UNIDIR CPP"},GHA:{ai:"published",cyber:"strategy",aiD:"10-year National AI Strategy 2023–2033; local language AI tools; UNESCO AI Ethics pilot 2019; AI law advocacy ongoing.",cyberD:"Cybersecurity Act; Cybersecurity Authority of Ghana; ITU GCI Tier 1 (99.27); 24/7 cybercrime contact point.",src:"Bowmans 2025 / Diplo 2024"},GIN:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Limited cybersecurity policy data.",src:"UNIDIR CPP"},GNB:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Limited cybersecurity policy data.",src:"UNIDIR CPP"},KEN:{ai:"published",cyber:"strategy",aiD:"National AI Strategy 2025–2030; AI Code of Practice; Digital Master Plan 2022–2032; co-signed Paris AI Charter Feb 2025; 42.1% ChatGPT usage rate.",cyberD:"ITU GCI Tier 1 (98.59); KE-CIRT; Cybersecurity Act; Budapest Convention signatory.",src:"Bowmans Sep 2025 / TechHive 2025"},LSO:{ai:"developing",cyber:"limited",aiD:"Draft AI strategy per 2025 reports.",cyberD:"Limited cybersecurity policy data.",src:"TechHive 2025"},LBR:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Limited cybersecurity policy data.",src:"UNIDIR CPP"},LBY:{ai:"published",cyber:"limited",aiD:"National AI strategy published 2024.",cyberD:"Limited publicly available cybersecurity policy data.",src:"FPF 2024"},MDG:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Limited cybersecurity policy data.",src:"UNIDIR CPP"},MWI:{ai:"none",cyber:"developing",aiD:"Windhoek Statement on AI in Southern Africa signatory.",cyberD:"Developing cybersecurity framework.",src:"UNIDIR CPP"},MLI:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"DPA issued guidelines on children's digital rights 2024.",src:"TechHive 2024"},MRT:{ai:"developing",cyber:"limited",aiD:"Making significant steps to define AI strategy per AU/FPF analysis.",cyberD:"Limited cybersecurity policy data.",src:"FPF 2024"},MUS:{ai:"published",cyber:"strategy",aiD:"First African country with national AI strategy (2018); Robotic and AI Enabled Advisory License; 2nd in Govt AI Readiness sub-Saharan Africa.",cyberD:"Top African cyber performer; CERT-MU; comprehensive financial sector framework.",src:"ECDPM 2024 / Diplo 2024"},MAR:{ai:"developing",cyber:"strategy",aiD:"Significant steps toward national AI strategy; International Centre on AI at UM6P (UNESCO Cat II center 2023); co-signed Paris AI Charter Feb 2025.",cyberD:"DGSSI; ITU GCI Tier 1 (97.5); only African country in top 50 National Cybersecurity Index. Budapest Convention signatory.",src:"ECDPM 2024 / Diplo 2024"},MOZ:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Limited cybersecurity policy data.",src:"UNIDIR CPP"},NAM:{ai:"published",cyber:"strategy",aiD:"National AI Strategy published Q1 2025; Windhoek Statement signatory; working with UNESCO.",cyberD:"National Cybersecurity Strategy and Awareness Raising Plan 2022–2027.",src:"TechHive 2025 / UNIDIR CPP"},NER:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Limited cybersecurity policy data.",src:"UNIDIR CPP"},NGA:{ai:"published",cyber:"strategy",aiD:"Draft National AI Strategy 2024; local language models; co-signed Public-Interest AI Platform Feb 2025; 9.3% AI adoption; 120+ AI startups.",cyberD:"Cybercrimes Act; ngCERT; ITU GCI Tier 3 (82.4); Budapest Convention participant.",src:"TechHive 2025 / Diplo 2024"},RWA:{ai:"published",cyber:"strategy",aiD:"National AI Policy 2023; WEF C4IR Rwanda; hosted first Global AI Summit on Africa, April 2025; 6.3% AI adoption.",cyberD:"ITU GCI Tier 1 (98.08); Budapest Convention Jan 2025; Rwanda SCCs for data transfers.",src:"TechHive Jan 2025 / Bowmans 2025"},STP:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Very limited cybersecurity policy data.",src:"UNIDIR CPP"},SEN:{ai:"published",cyber:"strategy",aiD:"AI strategy 2023; focus on local solutions; DPA children's digital rights guidelines 2024; 12.9% AI diffusion rate. Budapest Convention signatory.",cyberD:"National cybersecurity strategy; dedicated cybercrime law; international cooperation measures.",src:"FPF 2024 / Diplo 2024"},SLE:{ai:"published",cyber:"limited",aiD:"National AI policy published; UNESCO AI ethics framework participant.",cyberD:"Limited dedicated cybersecurity strategy.",src:"ECDPM 2024"},SOM:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Very limited cybersecurity policy data.",src:"UNIDIR CPP"},ZAF:{ai:"published",cyber:"strategy",aiD:"AI Policy Framework published 2024; 4IR Presidential Commission; WEF C4IR South Africa; leads continent in AI adoption (15.3%). AI-specific law under development.",cyberD:"Cybercrimes Act; NCPF; ITU GCI Tier 2 (86.25); POPIA enforcement. Budapest Convention signatory.",src:"TechHive 2024 / TechInAfrica 2025"},SSD:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Very limited cybersecurity policy data.",src:"UNIDIR CPP"},SDN:{ai:"none",cyber:"limited",aiD:"No published national AI strategy.",cyberD:"Limited cybersecurity policy data.",src:"UNIDIR CPP"},TZA:{ai:"developing",cyber:"strategy",aiD:"Draft National AI Strategy released 2025; child online protection framework in development.",cyberD:"ITU GCI Tier 1 (99.26); strong legal and technical cybersecurity measures.",src:"TechHive 2025 / Diplo 2024"},TGO:{ai:"none",cyber:"strategy",aiD:"No published national AI strategy; participated in Paris Peace Forum's Global Coalition to Safeguard Children in the Age of AI.",cyberD:"ITU GCI Tier 2 (88.8); regional cybersecurity centre agreement.",src:"TechHive 2025"},TUN:{ai:"developing",cyber:"strategy",aiD:"No finalised national AI strategy but strong AI talent; labelled 'country to watch'; Budapest Convention signatory.",cyberD:"ANSI; ITU GCI Tier 3 (82.0); dedicated cybercrime law.",src:"FPF 2024 / Diplo 2024"},UGA:{ai:"developing",cyber:"developing",aiD:"UNESCO AI ethics pilot 2019; AI governance proposals emerging; plans to revise data law for flexible international transfers.",cyberD:"Developing framework; mobile money sector focus.",src:"TechHive 2024"},ZMB:{ai:"published",cyber:"strategy",aiD:"National AI Strategy 2024–2027 launched Oct 2024; aligned with 8th National Development Plan; ethical AI and data protection focus.",cyberD:"ITU GCI Tier 2 (92.59); advancing cybersecurity measures.",src:"TechHive Jan 2025"},ZWE:{ai:"developing",cyber:"limited",aiD:"AI governance proposals emerging; Windhoek Statement signatory.",cyberD:"Limited cybersecurity policy data.",src:"TechHive 2024"},SYC:{ai:"none",cyber:"developing",aiD:"No published national AI strategy.",cyberD:"Incorporated CBPR in data protection law.",src:"TechHive 2024"}};
+
+const ISO_NUM={12:"DZA",24:"AGO",204:"BEN",72:"BWA",854:"BFA",108:"BDI",132:"CPV",120:"CMR",140:"CAF",148:"TCD",174:"COM",180:"COD",178:"COG",384:"CIV",262:"DJI",818:"EGY",226:"GNQ",232:"ERI",748:"SWZ",231:"ETH",266:"GAB",270:"GMB",288:"GHA",324:"GIN",624:"GNB",404:"KEN",426:"LSO",430:"LBR",434:"LBY",450:"MDG",454:"MWI",466:"MLI",478:"MRT",480:"MUS",504:"MAR",508:"MOZ",516:"NAM",562:"NER",566:"NGA",646:"RWA",678:"STP",686:"SEN",694:"SLE",706:"SOM",710:"ZAF",728:"SSD",729:"SDN",834:"TZA",768:"TGO",788:"TUN",800:"UGA",894:"ZMB",716:"ZWE",690:"SYC"};
+
+const AFRICAN_IDS=new Set(Object.keys(ISO_NUM).map(Number));
+
+function status(d){if(!d)return"none";const ai=d.ai==="published",cy=d.cyber==="strategy";if(ai&&cy)return"both";if(ai)return"ai";if(cy)return"cyber";if(d.ai==="developing"||d.cyber==="developing")return"developing";return"none";}
+const COL={both:"#7F77DD",ai:"#378ADD",cyber:"#1D9E75",developing:"#EF9F27",none:"#B4B2A9"};
+const FADED={both:"#CECBF6",ai:"#B5D4F4",cyber:"#9FE1CB",developing:"#FAC775",none:"#D3D1C7"};
+let view="all";
+function fillFor(iso){const d=POLICY[iso];const s=status(d);if(view==="all")return COL[s];if(view==="ai")return(d&&d.ai==="published")?COL.ai:(d&&d.ai==="developing")?FADED.ai:FADED.none;if(view==="cyber")return(d&&d.cyber==="strategy")?COL.cyber:(d&&d.cyber==="developing")?FADED.cyber:FADED.none;if(view==="both")return s==="both"?COL.both:FADED.none;return COL[s];}
+
+const tip=document.getElementById("tip");
+function showTip(e,iso,name){const d=POLICY[iso]||{ai:"none",cyber:"limited",aiD:"No data.",cyberD:"No data.",src:"—"};const s=status(d);const badge={both:'<span class="badge b-both">AI + Cyber</span>',ai:'<span class="badge b-ai">AI policy</span>',cyber:'<span class="badge b-cyber">Cyber strategy</span>',developing:'<span class="badge b-dev">Developing</span>',none:'<span class="badge b-none">No policy</span>'};const slug=(name||"").toLowerCase().replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,"");tip.innerHTML=`<h4>${name}</h4><div class="tip-badges">${badge[s]||badge.none}</div><div class="tip-row"><strong style="color:#378ADD">AI</strong><span>${d.aiD}</span></div><div class="tip-row"><strong style="color:#1D9E75">Cyber</strong><span>${d.cyberD}</span></div><div class="tip-src">Sources: ${d.src} · <a href="https://aipolicyportal.org/states/${slug}" target="_blank" style="color:var(--color-text-info)">AI Portal ↗</a> · <a href="https://cyberpolicyportal.org/en/states/${slug}" target="_blank" style="color:var(--color-text-info)">Cyber Portal ↗</a></div>`;tip.style.display="block";moveTip(e);}
+function moveTip(e){let x=e.clientX+14,y=e.clientY+14;if(x+270>window.innerWidth)x=e.clientX-278;if(y+220>window.innerHeight)y=e.clientY-228;tip.style.left=x+"px";tip.style.top=y+"px";}
+
+document.querySelectorAll(".btn").forEach(b=>{b.addEventListener("click",function(){document.querySelectorAll(".btn").forEach(x=>x.classList.remove("on"));this.classList.add("on");view=this.dataset.v;d3.selectAll(".country").attr("fill",function(){return fillFor(d3.select(this).attr("data-iso"));});});});
+
+fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+.then(r=>r.json())
+.then(world=>{
+  const all=topojson.feature(world,world.objects.countries);
+  const african=all.features.filter(f=>AFRICAN_IDS.has(+f.id));
+
+  const proj=d3.geoMercator().fitExtent([[20,20],[680,740]],{type:"FeatureCollection",features:african});
+  const path=d3.geoPath().projection(proj);
+
+  const bbox=african.reduce((acc,f)=>{const b=path.bounds(f);return{x0:Math.min(acc.x0,b[0][0]),y0:Math.min(acc.y0,b[0][1]),x1:Math.max(acc.x1,b[1][0]),y1:Math.max(acc.y1,b[1][1])};},{x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity});
+
+  const vw=bbox.x1-bbox.x0+40, vh=bbox.y1-bbox.y0+40;
+  const svg=d3.select("#svg").attr("viewBox",`${bbox.x0-20} ${bbox.y0-20} ${vw} ${vh}`).style("width","100%").style("height","auto");
+
+  svg.selectAll(".country")
+    .data(african)
+    .join("path")
+    .attr("class","country")
+    .attr("data-iso",f=>ISO_NUM[+f.id]||"")
+    .attr("d",path)
+    .attr("fill",f=>fillFor(ISO_NUM[+f.id]))
+    .on("mouseenter",(e,f)=>{const iso=ISO_NUM[+f.id];if(iso)showTip(e,iso,f.properties.name);})
+    .on("mousemove",e=>moveTip(e))
+    .on("mouseleave",()=>tip.style.display="none");
+
+  const vals=Object.values(POLICY);
+  document.getElementById("s-both").textContent=vals.filter(d=>status(d)==="both").length;
+  document.getElementById("s-ai").textContent=vals.filter(d=>d.ai==="published"||d.ai==="developing").length;
+  document.getElementById("s-cyber").textContent=vals.filter(d=>d.cyber==="strategy").length;
+  document.getElementById("s-total").textContent=Object.keys(POLICY).length;
+})
+.catch(()=>{document.getElementById("map-wrap").innerHTML="<p style='padding:2rem;color:var(--color-text-secondary);font-size:13px'>Map failed to load.</p>";});
+</script>

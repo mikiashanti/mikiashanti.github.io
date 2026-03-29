@@ -1,0 +1,324 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{padding:1rem 0;font-family:var(--font-sans)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.btn{padding:5px 12px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer}
+.btn.on{background:var(--color-background-danger);border-color:var(--color-border-danger);color:var(--color-text-danger);font-weight:500}
+.btn:hover:not(.on){background:var(--color-background-secondary)}
+.legend-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.legend-label{font-size:11px;color:var(--color-text-secondary)}
+.legend-bar{display:flex;gap:2px;align-items:center}
+.legend-seg{height:10px;width:28px;border-radius:2px}
+#map-wrap{position:relative;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:visible;background:var(--color-background-secondary)}
+#map-wrap svg{display:block;width:100%;height:auto}
+.country{stroke:#fff;stroke-width:0.5;cursor:pointer;transition:opacity .12s}
+.country:hover{opacity:.75;stroke-width:1.2}
+.no-data{fill:#E8E6DF}
+.tip{position:absolute;display:none;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:12px 14px;font-size:12px;max-width:272px;pointer-events:none;z-index:100}
+.tip h4{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:5px}
+.tip-count{font-size:22px;font-weight:500;color:#A32D2D;margin-bottom:6px}
+.tip-count span{font-size:12px;font-weight:400;color:var(--color-text-secondary);margin-left:4px}
+.tip-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.tag{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:500}
+.tag-ongoing{background:#FCEBEB;color:#791F1F}
+.tag-election{background:#FAEEDA;color:#633806}
+.tag-exam{background:#E6F1FB;color:#0C447C}
+.tag-protest{background:#FAECE7;color:#712B13}
+.tag-conflict{background:#EEEDFE;color:#3C3489}
+.tip-row{font-size:11px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:6px}
+.tip-src{font-size:10px;color:var(--color-text-tertiary);border-top:0.5px solid var(--color-border-tertiary);padding-top:5px;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.sc{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px 10px}
+.sn{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.sl{font-size:10px;color:var(--color-text-secondary);margin-top:1px}
+.sn.red{color:#A32D2D}
+@media(prefers-color-scheme:dark){
+  .tag-ongoing{background:#791F1F;color:#F7C1C1}
+  .tag-election{background:#633806;color:#FAC775}
+  .tag-exam{background:#0C447C;color:#B5D4F4}
+  .tag-protest{background:#712B13;color:#F5C4B3}
+  .tag-conflict{background:#3C3489;color:#CECBF6}
+  .no-data{fill:#2C2C2A}
+}
+</style>
+
+<div class="wrap">
+<div class="controls">
+  <span style="font-size:12px;color:var(--color-text-secondary)">Filter:</span>
+  <button class="btn on" data-f="all">All shutdowns</button>
+  <button class="btn" data-f="ongoing">Ongoing</button>
+  <button class="btn" data-f="election">Election-related</button>
+  <button class="btn" data-f="exam">Exam-related</button>
+  <button class="btn" data-f="protest">Protest / unrest</button>
+  <button class="btn" data-f="conflict">Armed conflict</button>
+</div>
+<div class="legend-row">
+  <span class="legend-label">Shutdowns (2018–2026):</span>
+  <div class="legend-bar">
+    <div class="legend-seg" style="background:#F7C1C1"></div>
+    <div class="legend-seg" style="background:#F09595"></div>
+    <div class="legend-seg" style="background:#E24B4A"></div>
+    <div class="legend-seg" style="background:#A32D2D"></div>
+    <div class="legend-seg" style="background:#501313"></div>
+  </div>
+  <span class="legend-label">1–3 &nbsp;&nbsp; 4–7 &nbsp;&nbsp; 8–12 &nbsp;&nbsp; 13–20 &nbsp;&nbsp; 21+</span>
+  <div style="width:20px;height:10px;background:#E8E6DF;border-radius:2px;margin-left:8px"></div>
+  <span class="legend-label">No recorded shutdowns</span>
+</div>
+<div id="map-wrap">
+  <div class="tip" id="tip"></div>
+  <svg id="svg"></svg>
+</div>
+<div class="stats">
+  <div class="sc"><div class="sn red" id="s-total">—</div><div class="sl">Total shutdowns tracked</div></div>
+  <div class="sc"><div class="sn red" id="s-countries">—</div><div class="sl">African countries affected</div></div>
+  <div class="sc"><div class="sn red" id="s-ongoing">—</div><div class="sl">Ongoing right now</div></div>
+  <div class="sc"><div class="sn" id="s-worst">—</div><div class="sl">Most shutdowns (Africa)</div></div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+const SD={
+  DZA:{name:"Algeria",total:17,ongoing:0,
+    tags:["exam"],
+    note:"17 shutdowns since 2018, all exam-related. Government shuts down internet nationally each June during Baccalaureate exams to prevent cheating — 5 days in 2023, 5 days in 2024. Primarily content/social media blocking rather than full blackout.",
+    events:[{y:2024,n:5,type:"exam"},{y:2023,n:10,type:"exam"},{y:2022,n:1,type:"exam"},{y:2021,n:1,type:"exam"}]},
+  ETH:{name:"Ethiopia",total:11,ongoing:0,
+    tags:["conflict","protest"],
+    note:"11 shutdowns since 2018. Tigray conflict shutdown lasted 818 days (Nov 2020 – Jan 2023). Amhara regional shutdown lasted 346 days (Aug 2023 – Jul 2024). Social media blocked Feb 2023 amid church split protests. State controls sole ISP (EthioTelecom).",
+    events:[{y:2023,n:3,type:"conflict"},{y:2022,n:1,type:"conflict"},{y:2021,n:1,type:"conflict"},{y:2020,n:3,type:"conflict"},{y:2019,n:3,type:"protest"}]},
+  SDN:{name:"Sudan",total:37,ongoing:0,
+    tags:["exam","conflict","protest"],
+    note:"37 shutdowns since 2018 — the highest in Africa. Regular exam-season shutdowns (4 per year), plus a 100-day blackout (Feb–May 2024) during conflict between army and RSF paramilitaries, and a 5-day blackout (Apr 2023) during armed fighting. Sudan has 97% market concentration across SudaTel, MTN, and Zain.",
+    events:[{y:2025,n:4,type:"exam"},{y:2024,n:5,type:"conflict"},{y:2023,n:6,type:"conflict"},{y:2022,n:7,type:"exam"},{y:2021,n:7,type:"exam"},{y:2020,n:5,type:"exam"},{y:2019,n:3,type:"protest"}]},
+  UGA:{name:"Uganda",total:6,ongoing:1,
+    tags:["ongoing","election"],
+    note:"6 shutdowns since 2018. Most recent: full internet shutdown 13–17 Jan 2026 during presidential elections, followed by ongoing Facebook/WhatsApp/Messenger block (since 17 Jan 2026, now 70+ days). Similar election shutdowns occurred in 2021. ECOWAS court rulings have not deterred repeat shutdowns.",
+    events:[{y:2026,n:2,type:"election"},{y:2021,n:2,type:"election"},{y:2019,n:1,type:"election"},{y:2018,n:1,type:"protest"}]},
+  COG:{name:"Republic of Congo",total:4,ongoing:0,
+    tags:["election"],
+    note:"4 shutdowns since 2018, all election-related. Most recent: national shutdown 15–17 March 2026 during presidential election extending Sassou Nguesso's rule. Previous shutdowns in 2021 and 2016 elections followed same pattern.",
+    events:[{y:2026,n:1,type:"election"},{y:2021,n:1,type:"election"},{y:2019,n:1,type:"election"},{y:2016,n:1,type:"election"}]},
+  GAB:{name:"Gabon",total:3,ongoing:1,
+    tags:["ongoing","protest","election"],
+    note:"3 shutdowns since 2018. Ongoing: social media block (Facebook, Instagram, Telegram, TikTok, YouTube) ordered Feb 2026 'to protect national unity amid unrest'. In Aug 2023, social media was blocked on election day; military coup announced shortly after.",
+    events:[{y:2026,n:1,type:"protest"},{y:2023,n:1,type:"election"},{y:2022,n:1,type:"protest"}]},
+  GIN:{name:"Guinea",total:4,ongoing:0,
+    tags:["protest","election"],
+    note:"4 shutdowns since 2018. Internet disrupted during 2020 election and subsequent protests. ECOWAS Court ruled in 2023 that Guinea's shutdown violated freedom of expression. Social media blocked repeatedly during civil unrest.",
+    events:[{y:2022,n:1,type:"protest"},{y:2021,n:1,type:"protest"},{y:2020,n:2,type:"election"}]},
+  CMR:{name:"Cameroon",total:3,ongoing:0,
+    tags:["conflict","election"],
+    note:"3 shutdowns since 2018. Anglophone regions (Northwest/Southwest) suffered 93-day internet shutdown in 2017 amid separatist conflict. Further disruptions during elections. Government has restricted social media around election periods.",
+    events:[{y:2023,n:1,type:"election"},{y:2022,n:1,type:"conflict"},{y:2021,n:1,type:"conflict"}]},
+  SEN:{name:"Senegal",total:3,ongoing:0,
+    tags:["protest","election"],
+    note:"3 shutdowns since 2018. TikTok blocked Aug 2023 following protests. Internet throttled during 2024 election period. ECOWAS Court ruled May 2025 that the 2023 protest shutdown was unlawful. Government subsequently agreed to lift TikTok block.",
+    events:[{y:2024,n:1,type:"election"},{y:2023,n:2,type:"protest"}]},
+  TCD:{name:"Chad",total:2,ongoing:0,
+    tags:["protest","conflict"],
+    note:"2 shutdowns tracked, but Chad experienced 365+ days of censored internet access from early 2019 amid political crisis. Internet severely restricted during protests. Chad also suffered knock-on outages from Sudan's Sudatel infrastructure disruptions in April 2023.",
+    events:[{y:2023,n:1,type:"conflict"},{y:2021,n:1,type:"protest"}]},
+  COD:{name:"DRC",total:5,ongoing:0,
+    tags:["conflict","election","protest"],
+    note:"5 shutdowns since 2018. Internet cut in Goma (Feb 2025) as M23 armed group seized the city. National SMS/internet shutdown Dec 2017 during Catholic Church protests against Kabila. Throttling during 2018 election. Civil society pressure has led to government commitments to keep internet on during elections.",
+    events:[{y:2025,n:1,type:"conflict"},{y:2023,n:1,type:"election"},{y:2021,n:1,type:"protest"},{y:2019,n:1,type:"election"},{y:2018,n:1,type:"election"}]},
+  TZA:{name:"Tanzania",total:2,ongoing:0,
+    tags:["election"],
+    note:"2 shutdowns tracked. Full data disruption on election day Oct 29 2025 — all regions reported outages, WhatsApp and SMS restricted, opposition unable to coordinate polling observers. Also disruptions during 2020 election.",
+    events:[{y:2025,n:1,type:"election"},{y:2020,n:1,type:"election"}]},
+  MRT:{name:"Mauritania",total:2,ongoing:0,
+    tags:["election","protest"],
+    note:"2 shutdowns tracked. Internet disrupted during elections and civil unrest.",
+    events:[{y:2023,n:1,type:"protest"},{y:2019,n:1,type:"election"}]},
+  MLI:{name:"Mali",total:2,ongoing:0,
+    tags:["protest","conflict"],
+    note:"2 shutdowns tracked. Social media and internet disrupted during 2020 military coup and subsequent protests.",
+    events:[{y:2021,n:1,type:"conflict"},{y:2020,n:1,type:"protest"}]},
+  BFA:{name:"Burkina Faso",total:3,ongoing:0,
+    tags:["protest","conflict"],
+    note:"3 shutdowns since 2018. Mobile internet shut down Nov 2021 (96 hours) following anti-government protests. Further disruptions during 2022 military coup. Fixed-line unaffected but less than 0.05 fixed connections per 100 people.",
+    events:[{y:2023,n:1,type:"conflict"},{y:2022,n:1,type:"conflict"},{y:2021,n:1,type:"protest"}]},
+  TGO:{name:"Togo",total:2,ongoing:0,
+    tags:["protest","election"],
+    note:"2 shutdowns tracked. Social media and messaging platforms (Facebook, Telegram, Signal, YouTube) blocked during political unrest. ECOWAS Court ruled in Amnesty International v. Togo (2020) that the 2017 shutdown violated the African Charter.",
+    events:[{y:2020,n:1,type:"election"},{y:2019,n:1,type:"protest"}]},
+  NGA:{name:"Nigeria",total:2,ongoing:0,
+    tags:["protest","election"],
+    note:"2 shutdowns tracked. Twitter/X suspended June 2021 – Jan 2022 (7 months) after Buhari govt objected to tweet deletion. ECOWAS Court ruled 2022 this violated freedom of expression. Social media disruptions during #EndSARS protests 2020.",
+    events:[{y:2022,n:1,type:"protest"},{y:2021,n:1,type:"protest"}]},
+  ZMB:{name:"Zambia",total:1,ongoing:0,
+    tags:["election"],
+    note:"1 shutdown tracked. Social media blocked on election day Aug 12 2021 to 'maintain peace and order'. Access restored by court order following lawsuit by Chapter One Foundation. ZICTA agreed in Mar 2022 not to act outside legal authority to interrupt internet.",
+    events:[{y:2021,n:1,type:"election"}]},
+  ZWE:{name:"Zimbabwe",total:2,ongoing:0,
+    tags:["protest","election"],
+    note:"2 shutdowns tracked (plus alleged unconfirmed disruptions). Internet and social media disrupted during anti-government protests Jan 2019 (3 days). Further disruptions alleged during 2023 elections though not fully confirmed.",
+    events:[{y:2023,n:1,type:"election"},{y:2019,n:1,type:"protest"}]},
+  SLE:{name:"Sierra Leone",total:1,ongoing:0,
+    tags:["election"],
+    note:"1 shutdown tracked. Internet disrupted during 2022 elections.",
+    events:[{y:2022,n:1,type:"election"}]},
+  LBY:{name:"Libya",total:1,ongoing:0,
+    tags:["conflict"],
+    note:"1 shutdown tracked. Internet disrupted in 2022 during armed conflict.",
+    events:[{y:2022,n:1,type:"conflict"}]},
+  EGY:{name:"Egypt",total:1,ongoing:0,
+    tags:["protest"],
+    note:"1 shutdown tracked since 2018, though Egypt heavily restricted internet during Arab Spring (2011). Periodic throttling reported during political events.",
+    events:[{y:2019,n:1,type:"protest"}]},
+  SSD:{name:"South Sudan",total:2,ongoing:0,
+    tags:["election","conflict"],
+    note:"2 shutdowns tracked. Civil society pressure led to government commitment to keep internet on during elections. Internet disrupted during conflict periods.",
+    events:[{y:2024,n:1,type:"election"},{y:2021,n:1,type:"conflict"}]},
+  MOZ:{name:"Mozambique",total:2,ongoing:0,
+    tags:["election","protest"],
+    note:"2 shutdowns tracked. Internet cut during local government elections Oct 2023 and general elections Oct 2024. Post-election protests in late 2024 also accompanied by internet disruptions.",
+    events:[{y:2024,n:1,type:"election"},{y:2023,n:1,type:"election"}]},
+  MUS:{name:"Mauritius",total:1,ongoing:0,
+    tags:["election"],
+    note:"1 shutdown tracked. Social media disrupted around 2019 elections. Civil society successfully pressured reversal of the shutdown.",
+    events:[{y:2019,n:1,type:"election"}]},
+  SOM:{name:"Somalia",total:1,ongoing:0,
+    tags:["election"],
+    note:"1 shutdown tracked. Internet disrupted during election period.",
+    events:[{y:2021,n:1,type:"election"}]},
+  TUN:{name:"Tunisia",total:1,ongoing:0,
+    tags:["protest"],
+    note:"1 shutdown tracked since 2018. Internet and social media periodically disrupted during protests, though Tunisia has generally had a more open internet environment post-Arab Spring.",
+    events:[{y:2022,n:1,type:"protest"}]},
+  BDI:{name:"Burundi",total:1,ongoing:0,
+    tags:["election"],
+    note:"1 shutdown tracked. Internet disrupted during elections.",
+    events:[{y:2020,n:1,type:"election"}]}
+};
+
+const COLORS={
+  1:[0,"#F7C1C1"],
+  2:[1,"#F7C1C1"],
+  3:[2,"#F7C1C1"],
+  4:[3,"#F09595"],
+  5:[3,"#F09595"],
+  6:[3,"#F09595"],
+  7:[3,"#F09595"],
+  8:[4,"#E24B4A"],
+  9:[4,"#E24B4A"],
+  10:[4,"#E24B4A"],
+  11:[4,"#E24B4A"],
+  12:[4,"#E24B4A"],
+  13:[5,"#A32D2D"],
+  17:[5,"#A32D2D"],
+  37:[6,"#501313"]
+};
+function getColor(n){
+  if(!n)return null;
+  if(n>=21)return"#501313";
+  if(n>=13)return"#A32D2D";
+  if(n>=8)return"#E24B4A";
+  if(n>=4)return"#F09595";
+  return"#F7C1C1";
+}
+
+const AFRICAN_ISO={12:"DZA",24:"AGO",204:"BEN",72:"BWA",854:"BFA",108:"BDI",132:"CPV",120:"CMR",140:"CAF",148:"TCD",174:"COM",180:"COD",178:"COG",384:"CIV",262:"DJI",818:"EGY",226:"GNQ",232:"ERI",748:"SWZ",231:"ETH",266:"GAB",270:"GMB",288:"GHA",324:"GIN",624:"GNB",404:"KEN",426:"LSO",430:"LBR",434:"LBY",450:"MDG",454:"MWI",466:"MLI",478:"MRT",480:"MUS",504:"MAR",508:"MOZ",516:"NAM",562:"NER",566:"NGA",646:"RWA",678:"STP",686:"SEN",694:"SLE",706:"SOM",710:"ZAF",728:"SSD",729:"SDN",834:"TZA",768:"TGO",788:"TUN",800:"UGA",894:"ZMB",716:"ZWE",690:"SYC"};
+const AFRICAN_IDS=new Set(Object.keys(AFRICAN_ISO).map(Number));
+
+let activeFilter="all";
+
+function matchesFilter(d,f){
+  if(f==="all")return true;
+  if(f==="ongoing")return d.ongoing>0;
+  return d.tags&&d.tags.includes(f);
+}
+
+function getFill(iso,f){
+  const d=SD[iso];
+  if(!d)return null;
+  if(!matchesFilter(d,f))return"#D3D1C7";
+  return getColor(d.total);
+}
+
+const tip=document.getElementById("tip");
+const wrap=document.getElementById("map-wrap");
+
+function showTip(e,iso,geoName){
+  const d=SD[iso];
+  if(!d){
+    tip.innerHTML=`<h4>${geoName}</h4><div class="tip-row">No internet shutdowns recorded by Internet Society Pulse (2018–2026).</div><div class="tip-src"><a href="https://pulse.internetsociety.org/en/shutdowns/" target="_blank" style="color:var(--color-text-info)">Check Pulse ↗</a></div>`;
+    tip.style.display="block";moveTip(e);return;
+  }
+  const tagLabels={ongoing:"Ongoing now",election:"Election-related",exam:"Exam-related",protest:"Protest / unrest",conflict:"Armed conflict"};
+  const tagClass={ongoing:"tag-ongoing",election:"tag-election",exam:"tag-exam",protest:"tag-protest",conflict:"tag-conflict"};
+  const tags=(d.tags||[]).map(t=>`<span class="tag ${tagClass[t]||''}">${tagLabels[t]||t}</span>`).join("");
+  const slug=d.name.toLowerCase().replace(/\s+/g,"-").replace(/[()]/g,"");
+  tip.innerHTML=`<h4>${d.name}</h4>
+    <div class="tip-count">${d.total}<span>shutdowns since 2018${d.ongoing?" · "+d.ongoing+" ongoing":""}</span></div>
+    <div class="tip-tags">${tags}</div>
+    <div class="tip-row">${d.note}</div>
+    <div class="tip-src"><a href="https://pulse.internetsociety.org/en/shutdowns/?country_code=${getCC(iso)}" target="_blank" style="color:var(--color-text-info)">View on Pulse ↗</a></div>`;
+  tip.style.display="block";moveTip(e);
+}
+
+function getCC(iso){
+  const m={DZA:"DZ",ETH:"ET",SDN:"SD",UGA:"UG",COG:"CG",GAB:"GA",GIN:"GN",CMR:"CM",SEN:"SN",TCD:"TD",COD:"CD",TZA:"TZ",MRT:"MR",MLI:"ML",BFA:"BF",TGO:"TG",NGA:"NG",ZMB:"ZM",ZWE:"ZW",SLE:"SL",LBY:"LY",EGY:"EG",SSD:"SS",MOZ:"MZ",MUS:"MU",SOM:"SO",TUN:"TN",BDI:"BI"};
+  return m[iso]||"";
+}
+
+function moveTip(e){
+  const r=wrap.getBoundingClientRect();
+  let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
+  if(x+280>wrap.offsetWidth)x=e.clientX-r.left-285;
+  if(y+260>wrap.offsetHeight)y=Math.max(4,e.clientY-r.top-270);
+  tip.style.left=x+"px";tip.style.top=y+"px";
+}
+
+document.querySelectorAll(".btn").forEach(b=>{
+  b.addEventListener("click",function(){
+    document.querySelectorAll(".btn").forEach(x=>x.classList.remove("on"));
+    this.classList.add("on");
+    activeFilter=this.dataset.f;
+    d3.selectAll(".country").attr("fill",function(){
+      const iso=d3.select(this).attr("data-iso");
+      const c=getFill(iso,activeFilter);
+      return c||"#E8E6DF";
+    });
+    d3.selectAll(".no-data-country").attr("fill","#E8E6DF");
+    tip.style.display="none";
+  });
+});
+
+fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+.then(r=>r.json())
+.then(world=>{
+  const all=topojson.feature(world,world.objects.countries);
+  const african=all.features.filter(f=>AFRICAN_IDS.has(+f.id));
+  const proj=d3.geoMercator().fitExtent([[20,20],[680,740]],{type:"FeatureCollection",features:african});
+  const path=d3.geoPath().projection(proj);
+  const bbox=african.reduce((a,f)=>{const b=path.bounds(f);return{x0:Math.min(a.x0,b[0][0]),y0:Math.min(a.y0,b[0][1]),x1:Math.max(a.x1,b[1][0]),y1:Math.max(a.y1,b[1][1])};},{x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity});
+  const vw=bbox.x1-bbox.x0+40,vh=bbox.y1-bbox.y0+40;
+  const svg=d3.select("#svg").attr("viewBox",`${bbox.x0-20} ${bbox.y0-20} ${vw} ${vh}`).style("width","100%").style("height","auto");
+
+  svg.selectAll(".country")
+    .data(african)
+    .join("path")
+    .attr("class","country")
+    .attr("data-iso",f=>AFRICAN_ISO[+f.id]||"")
+    .attr("d",path)
+    .attr("fill",f=>{const iso=AFRICAN_ISO[+f.id];const c=getFill(iso,activeFilter);return c||"#E8E6DF";})
+    .on("mouseenter",(e,f)=>{const iso=AFRICAN_ISO[+f.id];showTip(e,iso,f.properties.name);})
+    .on("mousemove",e=>moveTip(e))
+    .on("mouseleave",()=>tip.style.display="none");
+
+  const totalShutdowns=Object.values(SD).reduce((s,d)=>s+d.total,0);
+  const affected=Object.keys(SD).length;
+  const ongoing=Object.values(SD).filter(d=>d.ongoing>0).length;
+  const worst=Object.entries(SD).sort((a,b)=>b[1].total-a[1].total)[0];
+  document.getElementById("s-total").textContent=totalShutdowns;
+  document.getElementById("s-countries").textContent=affected;
+  document.getElementById("s-ongoing").textContent=ongoing+" countries";
+  document.getElementById("s-worst").textContent=`${worst[1].name} (${worst[1].total})`;
+})
+.catch(()=>{document.getElementById("map-wrap").innerHTML="<p style='padding:2rem;font-size:13px;color:var(--color-text-secondary)'>Map failed to load.</p>";});
+</script>

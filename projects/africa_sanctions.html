@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Africa Sanctions Map</title>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://unpkg.com/topojson-client@3"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      text-align: center;
+    }
+
+    svg {
+      width: 900px;
+      height: 600px;
+      margin: auto;
+      display: block;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: white;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      font-size: 14px;
+    }
+
+    .legend {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 14px;
+    }
+
+    .legend span {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Africa Sanctions Map</h2>
+
+<svg></svg>
+<div id="tooltip" class="tooltip"></div>
+
+<div class="legend">
+  <div><span style="background:#ef4444"></span> Sanctioned</div>
+  <div><span style="background:#22c55e"></span> Not Sanctioned</div>
+  <div><span style="background:#e5e7eb"></span> No Data</div>
+</div>
+
+<script>
+
+// ==========================
+// ISO mapping (Africa only)
+// ==========================
+const AFRICAN_ISO = {
+  12:"DZA",24:"AGO",204:"BEN",72:"BWA",854:"BFA",108:"BDI",132:"CPV",
+  120:"CMR",140:"CAF",148:"TCD",174:"COM",178:"COG",180:"COD",
+  384:"CIV",262:"DJI",818:"EGY",226:"GNQ",232:"ERI",748:"SWZ",
+  231:"ETH",266:"GAB",270:"GMB",288:"GHA",324:"GIN",624:"GNB",
+  404:"KEN",426:"LSO",430:"LBR",434:"LBY",450:"MDG",454:"MWI",
+  466:"MLI",478:"MRT",480:"MUS",504:"MAR",508:"MOZ",516:"NAM",
+  562:"NER",566:"NGA",646:"RWA",678:"STP",686:"SEN",690:"SYC",
+  694:"SLE",706:"SOM",710:"ZAF",728:"SSD",729:"SDN",732:"ESH",
+  834:"TZA",768:"TGO",788:"TUN",800:"UGA",894:"ZMB",716:"ZWE"
+};
+
+// ==========================
+// SANCTIONS DATA (embedded)
+// ==========================
+const SANCTIONS = {
+  // ECOWAS sanctions
+  MLI: { name: "Mali", sanctioned: true, type: "ECOWAS", reason: "Coup" },
+  GIN: { name: "Guinea", sanctioned: true, type: "ECOWAS", reason: "Coup" },
+  BFA: { name: "Burkina Faso", sanctioned: true, type: "ECOWAS", reason: "Coup" },
+  NER: { name: "Niger", sanctioned: true, type: "ECOWAS", reason: "Coup" },
+
+  // Other sanctions
+  SDN: { name: "Sudan", sanctioned: true, type: "US", reason: "Conflict" },
+  SSD: { name: "South Sudan", sanctioned: true, type: "UN/US", reason: "Conflict" },
+  ERI: { name: "Eritrea", sanctioned: true, type: "UN/US", reason: "Security" },
+  ZWE: { name: "Zimbabwe", sanctioned: true, type: "US/EU", reason: "Governance" },
+
+  // Not sanctioned examples
+  DZA: { name: "Algeria", sanctioned: false },
+  MAR: { name: "Morocco", sanctioned: false },
+  ZAF: { name: "South Africa", sanctioned: false },
+  NGA: { name: "Nigeria", sanctioned: false },
+  KEN: { name: "Kenya", sanctioned: false }
+};
+
+// ==========================
+// Color function
+// ==========================
+function sanctionColor(d) {
+  if (!d) return "#e5e7eb";      // no data
+  if (!d.sanctioned) return "#22c55e"; // green
+  return "#ef4444";              // red
+}
+
+// ==========================
+// Draw map
+// ==========================
+fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+  .then(res => res.json())
+  .then(world => {
+
+    const countries = topojson.feature(world, world.objects.countries);
+
+    const svg = d3.select("svg");
+    const path = d3.geoPath();
+    const tooltip = d3.select("#tooltip");
+
+    svg.selectAll("path")
+      .data(countries.features)
+      .join("path")
+      .attr("d", path)
+      .attr("fill", d => {
+        const iso = AFRICAN_ISO[d.id];
+        const data = SANCTIONS[iso];
+        return sanctionColor(data);
+      })
+      .attr("stroke", "#ffffff")
+
+      .on("mouseover", function(event, d) {
+        const iso = AFRICAN_ISO[d.id];
+        const data = SANCTIONS[iso];
+
+        if (!data) {
+          tooltip.style("opacity", 1)
+            .html("No data");
+          return;
+        }
+
+        tooltip.style("opacity", 1)
+          .html(`
+            <strong>${data.name}</strong><br/>
+            ${data.sanctioned ? "Sanctioned ❌" : "Not sanctioned ✅"}<br/>
+            ${data.type ? `Type: ${data.type}<br/>` : ""}
+            ${data.reason ? `Reason: ${data.reason}` : ""}
+          `);
+      })
+
+      .on("mousemove", function(event) {
+        tooltip
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY + 10) + "px");
+      })
+
+      .on("mouseout", function() {
+        tooltip.style("opacity", 0);
+      });
+
+  });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Democracy in Africa – Freedom House 2026</title>
+<link rel="stylesheet" href="./style.css">
+<link rel="icon" type="image/jpg" href="/img/world.jpg">
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap");
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"DM Sans",system-ui,sans-serif;color:#1a1a2e;background:#fff}
+.page-hero{background:#0b1120;padding:40px 32px;border-radius:18px;margin:16px 16px 0;position:relative;overflow:hidden}
+.page-hero::before{content:"";position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(192,57,43,.4) 0%,transparent 70%);pointer-events:none}
+.page-hero h1{font-family:"Playfair Display",Georgia,serif;font-size:2rem;color:#fff;position:relative;z-index:1}
+.page-hero p{font-size:0.9rem;color:rgba(255,255,255,.6);margin-top:8px;font-weight:300;position:relative;z-index:1}
+.map-section{display:grid;grid-template-columns:1fr;gap:0;margin:24px 16px}
+@media(min-width:900px){.map-section{grid-template-columns:1fr 320px;gap:20px;align-items:start}}
+.controls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;margin-top:16px}
+.fbtn{padding:5px 12px;font-size:12px;border:1px solid rgba(0,0,0,.15);border-radius:4px;background:#fff;color:#6b7280;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .2s}
+.fbtn.on{background:#0b1120;border-color:#0b1120;color:#fff;font-weight:500}
+.fbtn:hover:not(.on){background:#f4f5f7;color:#0b1120}
+.legend-wrap{margin-bottom:10px}
+.legend-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:4px}
+.legend-label{font-size:11px;color:#6b7280}
+.legend-gradient{display:flex;gap:1px;height:10px;border-radius:2px;overflow:hidden;width:160px}
+.legend-seg{flex:1}
+.legend-ticks{display:flex;justify-content:space-between;width:160px;font-size:10px;color:#9ca3af;margin-top:2px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280}
+.ld{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+.map-wrap{position:relative;border:1px solid rgba(0,0,0,.08);border-radius:12px;overflow:hidden;background:#f4f5f7;max-height:520px}
+.map-wrap svg{display:block;width:100%;height:auto;max-height:520px}
+.country{stroke:#fff;stroke-width:0.5;cursor:pointer;transition:opacity .12s}
+.country:hover{opacity:.75;stroke-width:1.2}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.sc{background:#f4f5f7;border-radius:8px;padding:10px 12px}
+.sn{font-size:18px;font-weight:500;color:#0b1120;font-family:"Playfair Display",serif}
+.sl{font-size:10px;color:#6b7280;margin-top:2px}
+.detail-col{position:sticky;top:80px}
+.detail-panel{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;overflow:hidden;min-height:200px}
+.detail-empty{padding:32px 20px;text-align:center}
+.detail-empty-icon{width:48px;height:48px;border-radius:50%;background:#f4f5f7;margin:0 auto 12px;display:flex;align-items:center;justify-content:center}
+.detail-empty p{font-size:13px;color:#6b7280;font-weight:300}
+.detail-head{padding:20px;position:relative}
+.detail-head h2{font-family:"Playfair Display",serif;font-size:1.3rem;color:#fff;margin-bottom:6px}
+.detail-score-big{font-size:3rem;font-weight:700;font-family:"Playfair Display",serif;color:#fff;line-height:1}
+.detail-score-label{font-size:0.8rem;color:rgba(255,255,255,.6);margin-top:2px;font-family:"DM Sans",sans-serif;font-weight:300}
+.detail-close{position:absolute;top:12px;right:14px;background:rgba(255,255,255,.15);border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;line-height:1;font-family:sans-serif}
+.detail-close:hover{background:rgba(255,255,255,.25)}
+.status-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;margin-top:8px;font-family:"DM Sans",sans-serif}
+.badge-free{background:rgba(45,183,93,.25);color:#d4f7e0}
+.badge-partly{background:rgba(239,159,39,.25);color:#fdecd4}
+.badge-notfree{background:rgba(192,57,43,.3);color:#fcc}
+.detail-body{padding:16px 20px}
+.score-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+.score-row:last-child{border-bottom:none}
+.score-name{font-size:12px;color:#6b7280;font-weight:400}
+.score-val{font-size:13px;font-weight:500;color:#0b1120}
+.score-bar-wrap{flex:1;margin:0 10px;height:5px;background:#f0eee8;border-radius:3px;overflow:hidden}
+.score-bar{height:100%;border-radius:3px}
+.change-badge{font-size:10px;font-weight:500;padding:2px 6px;border-radius:10px;margin-left:6px}
+.ch-up{background:#d4f7e0;color:#0f6e56}
+.ch-dn{background:#FCEBEB;color:#791F1F}
+.ch-nc{background:#f0eee8;color:#888780}
+.detail-note{font-size:12px;color:#6b7280;line-height:1.6;font-weight:300;margin-top:12px}
+.detail-link{display:inline-block;padding:8px 16px;background:#0b1120;color:#fff;text-decoration:none;border-radius:4px;font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;margin-top:12px;transition:background .2s}
+.detail-link:hover{background:#c0392b}
+.detail-link:visited{color:#fff}
+.hover-hint{font-size:11px;color:#6b7280;margin-top:8px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="page-hero">
+  <h1>Democracy in Africa</h1>
+  <p>Freedom in the World 2026 · Freedom House · Political rights &amp; civil liberties scores</p>
+</div>
+
+<div class="map-section">
+  <div class="map-col">
+    <div class="controls">
+      <button class="fbtn on" data-f="score">Freedom score</button>
+      <button class="fbtn" data-f="pr">Political rights</button>
+      <button class="fbtn" data-f="cl">Civil liberties</button>
+      <button class="fbtn" data-f="status">Status only</button>
+    </div>
+    <div class="legend-wrap">
+      <div class="legend-row" id="legend-gradient-row">
+        <span class="legend-label" id="legend-title">Score (0–100):</span>
+        <div>
+          <div class="legend-gradient">
+            <div class="legend-seg" style="background:#501313"></div>
+            <div class="legend-seg" style="background:#A32D2D"></div>
+            <div class="legend-seg" style="background:#E24B4A"></div>
+            <div class="legend-seg" style="background:#F09595"></div>
+            <div class="legend-seg" style="background:#F7C1C1"></div>
+            <div class="legend-seg" style="background:#fdecd4"></div>
+            <div class="legend-seg" style="background:#d4f7e0"></div>
+            <div class="legend-seg" style="background:#9FE1CB"></div>
+            <div class="legend-seg" style="background:#1D9E75"></div>
+            <div class="legend-seg" style="background:#085041"></div>
+          </div>
+          <div class="legend-ticks"><span>0</span><span>50</span><span>100</span></div>
+        </div>
+      </div>
+      <div class="legend-row" id="legend-status-row" style="display:none">
+        <div class="li"><div class="ld" style="background:#1D9E75"></div>Free</div>
+        <div class="li"><div class="ld" style="background:#EF9F27"></div>Partly free</div>
+        <div class="li"><div class="ld" style="background:#A32D2D"></div>Not free</div>
+        <div class="li"><div class="ld" style="background:#d3d1c7"></div>No data</div>
+      </div>
+    </div>
+    <div class="map-wrap" id="map-wrap">
+      <svg id="svg"></svg>
+    </div>
+    <p class="hover-hint">Click a country to see details</p>
+    <div class="stats">
+      <div class="sc"><div class="sn" id="s-free" style="color:#1D9E75">—</div><div class="sl">Free countries</div></div>
+      <div class="sc"><div class="sn" id="s-partly" style="color:#EF9F27">—</div><div class="sl">Partly free</div></div>
+      <div class="sc"><div class="sn" id="s-notfree" style="color:#A32D2D">—</div><div class="sl">Not free</div></div>
+    </div>
+  </div>
+
+  <div class="detail-col">
+    <div class="detail-panel" id="detail-panel">
+      <div class="detail-empty" id="detail-empty">
+        <div class="detail-empty-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm1 12H9v-2h2v2zm0-4H9V6h2v4z" fill="#b4b2a9"/></svg>
+        </div>
+        <p>Click any country on the map to see its Freedom House scores and country report.</p>
+      </div>
+      <div id="detail-content" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+// Freedom House 2026 data – African countries
+// Fields: score/100, pr (political rights), cl (civil liberties), status, change, slug
+const FH = {
+  DZA:{name:"Algeria",score:31,pr:10,cl:21,status:"NF",change:"NC",slug:"algeria",note:"Algeria remains not free. The government restricts political opposition, protests, and independent media. Internet shutdowns occur during exam seasons."},
+  AGO:{name:"Angola",score:28,pr:10,cl:18,status:"NF",change:"NC",slug:"angola",note:"Angola is rated not free. Despite some liberalisation since 2017, the ruling MPLA has dominated since independence. Civil society space remains narrow."},
+  BEN:{name:"Benin",score:61,pr:19,cl:42,status:"PF",change:"UP",slug:"benin",note:"Benin improved to partly free in 2026. Political competition is real but the incumbent has consolidated power. Civil liberties remain stronger than political rights."},
+  BWA:{name:"Botswana",score:75,pr:31,cl:44,status:"F",change:"NC",slug:"botswana",note:"Botswana is one of Africa's strongest democracies, rated free. Peaceful transfers of power, independent judiciary, and strong anti-corruption record. Ruled free since independence."},
+  BFA:{name:"Burkina Faso",score:20,pr:2,cl:18,status:"NF",change:"DN",slug:"burkina-faso",note:"Burkina Faso declined sharply after two military coups in 2022. Press freedom has collapsed, civil society is suppressed, and security forces commit abuses with impunity amid the Sahel insurgency."},
+  BDI:{name:"Burundi",score:13,pr:2,cl:11,status:"NF",change:"DN",slug:"burundi",note:"Burundi declined further in 2026. President Ndayishimiye's government has maintained repressive practices from the Nkurunziza era — restricting the press, opposition, and civil society."},
+  CPV:{name:"Cabo Verde",score:92,pr:38,cl:54,status:"F",change:"NC",slug:"cabo-verde",note:"Cabo Verde is one of Africa's freest nations. A stable multiparty democracy with free elections, press freedom, and strong civil liberties. Consistently among Africa's top scorers."},
+  CMR:{name:"Cameroon",score:15,pr:6,cl:9,status:"NF",change:"NC",slug:"cameroon",note:"Cameroon is not free. President Biya has ruled since 1982. The Anglophone regions face a brutal civil conflict and prolonged internet shutdowns. Media and opposition are heavily restricted."},
+  CAF:{name:"Central African Republic",score:5,pr:1,cl:4,status:"NF",change:"NC",slug:"central-african-republic",note:"The CAR is one of Africa's least free countries. Armed groups control large parts of the territory, the government depends on Russian Wagner mercenaries, and civilian abuses are rampant."},
+  TCD:{name:"Chad",score:15,pr:1,cl:14,status:"NF",change:"NC",slug:"chad",note:"Chad is not free. The transitional military council under Mahamat Idriss Déby has restricted political activity and postponed civilian rule despite 2023 referendum. Press freedom is severely curtailed."},
+  COM:{name:"Comoros",score:41,pr:16,cl:25,status:"PF",change:"DN",slug:"comoros",note:"Comoros declined to partly free. President Azali Assoumani amended the constitution in 2018 to allow himself more terms. Elections are not considered free and fair."},
+  COD:{name:"DRC",score:18,pr:4,cl:14,status:"NF",change:"NC",slug:"democratic-republic-congo",note:"The DRC is not free. President Tshisekedi won a disputed 2023 election. The East is devastated by conflict with M23/Rwanda-backed forces. Civil liberties are severely restricted."},
+  COG:{name:"Republic of Congo",score:17,pr:2,cl:15,status:"NF",change:"NC",slug:"republic-congo",note:"Republic of Congo is not free. Denis Sassou Nguesso has ruled for most of the period since 1979. Elections are tightly controlled and the opposition is marginalised."},
+  CIV:{name:"Côte d'Ivoire",score:46,pr:17,cl:29,status:"PF",change:"DN",slug:"cote-divoire",note:"Côte d'Ivoire declined to partly free. President Ouattara's 2020 third-term bid drew protests and an opposition boycott. Freedom of assembly and press freedom remain constrained."},
+  DJI:{name:"Djibouti",score:24,pr:5,cl:19,status:"NF",change:"NC",slug:"djibouti",note:"Djibouti is not free. President Guelleh has ruled since 1999. The opposition is weak, media independent space is minimal, and the country's strategic location means external pressure is low."},
+  EGY:{name:"Egypt",score:18,pr:6,cl:12,status:"NF",change:"NC",slug:"egypt",note:"Egypt is not free. President el-Sisi rules under emergency-era laws. Mass political imprisonment, disappearances, torture, and total media dominance persist. Civil society space has essentially closed."},
+  GNQ:{name:"Equatorial Guinea",score:5,pr:0,cl:5,status:"NF",change:"NC",slug:"equatorial-guinea",note:"Equatorial Guinea is one of Africa's most authoritarian states. President Obiang, in power since 1979, runs a kleptocratic state. No meaningful political competition exists."},
+  ERI:{name:"Eritrea",score:3,pr:1,cl:2,status:"NF",change:"NC",slug:"eritrea",note:"Eritrea is the least free country in Africa and one of the least free in the world. No independent press, no civil society, indefinite military service, and pervasive surveillance."},
+  SWZ:{name:"Eswatini",score:17,pr:1,cl:16,status:"NF",change:"NC",slug:"eswatini",note:"Eswatini is Africa's last absolute monarchy. Political parties are banned. Pro-democracy protests in 2021 were met with lethal force. Civil liberties remain severely restricted."},
+  ETH:{name:"Ethiopia",score:18,pr:8,cl:10,status:"NF",change:"NC",slug:"ethiopia",note:"Ethiopia is not free. The 2020–2022 Tigray war caused catastrophic civilian suffering. Internet shutdowns, arbitrary detention, and press restrictions persist under PM Abiy Ahmed."},
+  GAB:{name:"Gabon",score:25,pr:5,cl:20,status:"NF",change:"UP",slug:"gabon",note:"Gabon slightly improved after a 2023 military coup ended the Bongo family's 56-year rule. The transitional authority lifted some restrictions but full civilian rule has not returned. Social media remains blocked (Feb 2026)."},
+  GMB:{name:"Gambia",score:51,pr:22,cl:29,status:"PF",change:"UP",slug:"gambia",note:"The Gambia improved to partly free under President Barrow following Jammeh's 2017 ouster. Democratic consolidation continues, though reconciliation and security sector reform are incomplete."},
+  GHA:{name:"Ghana",score:80,pr:35,cl:45,status:"F",change:"NC",slug:"ghana",note:"Ghana is one of Africa's most stable democracies. It has had seven peaceful transfers of power since 1992. Press freedom is strong and civil society is vibrant. Rated free consistently."},
+  GIN:{name:"Guinea",score:28,pr:6,cl:22,status:"NF",change:"DN",slug:"guinea",note:"Guinea declined under the military junta (CNRD) that took power in September 2021. Colonel Mamadi Doumbouya has postponed civilian rule, restricted protests, and curtailed press freedom."},
+  GNB:{name:"Guinea-Bissau",score:33,pr:7,cl:26,status:"PF",change:"DN",slug:"guinea-bissau",note:"Guinea-Bissau declined to partly free. Political instability, regular coups (9 since 1974), and a military-political nexus undermine democracy. Drug trafficking deeply affects governance."},
+  KEN:{name:"Kenya",score:49,pr:21,cl:28,status:"PF",change:"DN",slug:"kenya",note:"Kenya declined in 2026. Mass anti-government protests in 2024 were met with deadly force. President Ruto's administration has faced accusations of corruption and suppressing dissent. Press freedom deteriorated."},
+  LSO:{name:"Lesotho",score:67,pr:31,cl:36,status:"F",change:"UP",slug:"lesotho",note:"Lesotho improved to free. Despite a history of coups, the 2022 elections and new government have stabilised. Constitutional reforms are ongoing to address structural democratic weaknesses."},
+  LBR:{name:"Liberia",score:65,pr:31,cl:34,status:"PF",change:"UP",slug:"liberia",note:"Liberia improved to partly free. Former football star George Weah lost in a credible 2023 election to Joseph Boakai — a rare peaceful democratic transfer in the region."},
+  LBY:{name:"Libya",score:10,pr:2,cl:8,status:"NF",change:"NC",slug:"libya",note:"Libya is not free. The country remains split between rival governments in Tripoli and Benghazi. Armed militias control much of the territory and civilians face pervasive abuses."},
+  MDG:{name:"Madagascar",score:50,pr:16,cl:34,status:"PF",change:"DN",slug:"madagascar",note:"Madagascar declined to partly free. The 2023 elections were marred by a main opposition boycott. President Rajoelina won a third term in a poll international observers criticised."},
+  MWI:{name:"Malawi",score:68,pr:30,cl:38,status:"F",change:"UP",slug:"malawi",note:"Malawi improved to free. The 2020 election re-run — after courts annulled a fraudulent result — is a landmark African democratic precedent. Civil society and judiciary remain robust."},
+  MLI:{name:"Mali",score:21,pr:3,cl:18,status:"NF",change:"DN",slug:"mali",note:"Mali declined sharply after two coups in 2020–2021. The military junta expelled French forces, embraced Russian Wagner, banned political parties, and postponed elections indefinitely."},
+  MRT:{name:"Mauritania",score:38,pr:15,cl:23,status:"PF",change:"DN",slug:"mauritania",note:"Mauritania declined to partly free. President Ghazouani won re-election in 2024, but the campaign was marred by restrictions on opposition candidates. Slavery continues despite legal prohibition."},
+  MUS:{name:"Mauritius",score:87,pr:36,cl:51,status:"F",change:"UP",slug:"mauritius",note:"Mauritius improved significantly in 2026, following the 2024 election which ousted Prime Minister Jugnauth in a surprise result — a healthy sign of democratic accountability. Rated free."},
+  MAR:{name:"Morocco",score:37,pr:13,cl:24,status:"PF",change:"NC",slug:"morocco",note:"Morocco is partly free. The king retains significant executive power. The 2016 Hirak movement protests were suppressed. Journalists and activists face politically motivated prosecutions."},
+  MOZ:{name:"Mozambique",score:42,pr:13,cl:29,status:"PF",change:"UP",slug:"mozambique",note:"Mozambique improved slightly. The October 2024 election results sparked widespread protests after a disputed outcome. The jihadist insurgency in Cabo Delgado continues to restrict freedoms in the north."},
+  NAM:{name:"Namibia",score:73,pr:28,cl:45,status:"F",change:"NC",slug:"namibia",note:"Namibia is one of southern Africa's strongest democracies. Free elections, an independent judiciary, and strong civil liberties. However, economic inequality and land reform remain major challenges."},
+  NER:{name:"Niger",score:27,pr:3,cl:24,status:"NF",change:"DN",slug:"niger",note:"Niger declined sharply after the July 2023 military coup that ousted President Bazoum. The junta expelled French forces, suspended political activity, and drew closer to Russia and Mali."},
+  NGA:{name:"Nigeria",score:44,pr:20,cl:24,status:"PF",change:"NC",slug:"nigeria",note:"Nigeria remains partly free. The 2023 election was contested and marred by irregularities. Boko Haram/ISWAP violence, banditry, and secessionist tensions in the southeast restrict freedoms."},
+  RWA:{name:"Rwanda",score:21,pr:7,cl:14,status:"NF",change:"NC",slug:"rwanda",note:"Rwanda is not free despite strong economic governance. President Kagame won 99% in the 2024 election — opposition figures face prosecution, exile, or death. Press and civil society are tightly controlled."},
+  STP:{name:"São Tomé and Príncipe",score:84,pr:35,cl:49,status:"F",change:"NC",slug:"sao-tome-and-principe",note:"São Tomé and Príncipe is free and one of Africa's most stable small democracies. Regular competitive elections, strong civil liberties, and a functioning multiparty system."},
+  SEN:{name:"Senegal",score:70,pr:30,cl:40,status:"F",change:"UP",slug:"senegal",note:"Senegal improved significantly to free in 2026. Bassirou Diomaye Faye's surprise 2024 election win — while former President Sall's opponent Sonko was in prison — showed democratic resilience."},
+  SLE:{name:"Sierra Leone",score:61,pr:23,cl:38,status:"PF",change:"UP",slug:"sierra-leone",note:"Sierra Leone improved to partly free. The 2023 elections were competitive despite disputed results. Democratic institutions have strengthened since the end of civil war in 2002."},
+  SOM:{name:"Somalia",score:8,pr:2,cl:6,status:"NF",change:"NC",slug:"somalia",note:"Somalia is not free. The federal government controls limited territory and Al-Shabaab controls much of the south. Elections are conducted through a clan-based system with no direct popular vote."},
+  ZAF:{name:"South Africa",score:81,pr:34,cl:47,status:"F",change:"NC",slug:"south-africa",note:"South Africa remains free. The 2024 election produced a historic result: the ANC lost its majority for the first time since 1994, forming a Government of National Unity. Press and judiciary remain strong."},
+  SSD:{name:"South Sudan",score:0,pr:-4,cl:4,status:"NF",change:"DN",slug:"south-sudan",note:"South Sudan declined to 0/100 — the lowest score in Africa and among the world's worst. The peace agreement is collapsing, civil war has resumed in parts, and mass atrocities continue."},
+  SDN:{name:"Sudan",score:1,pr:-4,cl:5,status:"NF",change:"DN",slug:"sudan",note:"Sudan declined to 1/100. The civil war between the SAF and RSF (since April 2023) has caused one of the world's worst humanitarian crises. Civilians face mass atrocities, displacement, and famine."},
+  TZA:{name:"Tanzania",score:28,pr:6,cl:22,status:"NF",change:"DN",slug:"tanzania",note:"Tanzania declined to not free. President Hassan has not reversed Magufuli-era restrictions. The 2025 election was marred by opposition suppression and internet disruptions. Press freedom deteriorated."},
+  TGO:{name:"Togo",score:37,pr:11,cl:26,status:"PF",change:"DN",slug:"togo",note:"Togo declined to partly free. President Gnassingbé changed the constitution in 2024 to switch to a parliamentary system — a move critics saw as allowing him to remain in power indefinitely."},
+  TUN:{name:"Tunisia",score:42,pr:11,cl:31,status:"PF",change:"DN",slug:"tunisia",note:"Tunisia declined significantly. President Saied's 2021 self-coup dismantled democratic institutions built after the Arab Spring. Opposition leaders have been imprisoned and the constitution rewritten."},
+  UGA:{name:"Uganda",score:33,pr:10,cl:23,status:"NF",change:"DN",slug:"uganda",note:"Uganda declined to not free. Museveni has ruled since 1986. The 2026 election included a pre-election internet shutdown and ongoing social media blocks. Opposition figure Bobi Wine has faced continued persecution."},
+  ZMB:{name:"Zambia",score:53,pr:22,cl:31,status:"PF",change:"NC",slug:"zambia",note:"Zambia is partly free. President Hichilema won the 2021 election in a surprise democratic transfer. However, his administration has faced criticism for using laws against political opponents."},
+  ZWE:{name:"Zimbabwe",score:25,pr:8,cl:17,status:"NF",change:"DN",slug:"zimbabwe",note:"Zimbabwe declined to not free. President Mnangagwa's 2023 re-election was not credible according to observers. Journalists and activists are routinely arrested. ZANU-PF retains near-total control."}
+};
+
+const AFRICAN_ISO={12:"DZA",24:"AGO",204:"BEN",72:"BWA",854:"BFA",108:"BDI",132:"CPV",120:"CMR",140:"CAF",148:"TCD",174:"COM",180:"COD",178:"COG",384:"CIV",262:"DJI",818:"EGY",226:"GNQ",232:"ERI",748:"SWZ",231:"ETH",266:"GAB",270:"GMB",288:"GHA",324:"GIN",624:"GNB",404:"KEN",426:"LSO",430:"LBR",434:"LBY",450:"MDG",454:"MWI",466:"MLI",478:"MRT",480:"MUS",504:"MAR",508:"MOZ",516:"NAM",562:"NER",566:"NGA",646:"RWA",678:"STP",686:"SEN",694:"SLE",706:"SOM",710:"ZAF",728:"SSD",729:"SDN",834:"TZA",768:"TGO",788:"TUN",800:"UGA",894:"ZMB",716:"ZWE",690:"SYC"};
+const AFRICAN_IDS=new Set(Object.keys(AFRICAN_ISO).map(Number));
+
+// Colour scale: red (low freedom) → amber (middle) → green (high freedom)
+function scoreColor(s){
+  if(s===null||s===undefined)return"#d3d1c7";
+  if(s<=10)return"#501313";
+  if(s<=20)return"#A32D2D";
+  if(s<=30)return"#E24B4A";
+  if(s<=40)return"#F09595";
+  if(s<=50)return"#F7C1C1";
+  if(s<=60)return"#fdecd4";
+  if(s<=70)return"#d4f7e0";
+  if(s<=80)return"#9FE1CB";
+  if(s<=90)return"#1D9E75";
+  return"#085041";
+}
+
+function prColor(pr){
+  if(pr===null||pr===undefined)return"#d3d1c7";
+  const pct=(Math.max(0,pr)/40)*100;
+  return scoreColor(pct);
+}
+
+function clColor(cl){
+  if(cl===null||cl===undefined)return"#d3d1c7";
+  const pct=(Math.max(0,cl)/60)*100;
+  return scoreColor(pct);
+}
+
+const STATUS_COL={F:"#1D9E75",PF:"#EF9F27",NF:"#A32D2D"};
+const STATUS_LABEL={F:"Free",PF:"Partly free",NF:"Not free"};
+
+let activeFilter="score";
+let selectedIso=null;
+
+function getFill(iso){
+  const d=FH[iso];
+  if(!d) return "#d3d1c7";
+  if(activeFilter==="score") return scoreColor(d.score);
+  if(activeFilter==="pr") return prColor(d.pr);
+  if(activeFilter==="cl") return clColor(d.cl);
+  if(activeFilter==="status") return STATUS_COL[d.status]||"#d3d1c7";
+  return scoreColor(d.score);
+}
+
+function renderDetail(iso, geoName){
+  const d=FH[iso];
+  const content=document.getElementById("detail-content");
+  const empty=document.getElementById("detail-empty");
+  empty.style.display="none";
+  content.style.display="block";
+
+  if(!d){
+    content.innerHTML=`<div style="background:#0b1120;padding:20px;position:relative"><button class="detail-close" id="detail-close-btn">&#x2715;</button><h2 style="font-family:'Playfair Display',serif;color:#fff;font-size:1.2rem">${geoName}</h2><p style="color:rgba(255,255,255,.5);font-size:12px;margin-top:6px">Not covered by Freedom House</p></div><div class="detail-body"><a class="detail-link" href="https://freedomhouse.org/country/scores" target="_blank">View all scores ↗</a></div>`;
+    document.getElementById("detail-close-btn").addEventListener("click",closeDetail);
+    return;
+  }
+
+  const chLabel={UP:"Improved",DN:"Declined",NC:"No change"};
+  const chClass={UP:"ch-up",DN:"ch-dn",NC:"ch-nc"};
+  const headBg={F:"#085041",PF:"#854F0B",NF:"#501313"};
+  const badgeClass={F:"badge-free",PF:"badge-partly",NF:"badge-notfree"};
+  const prMax=40, clMax=60;
+
+  content.innerHTML=`
+    <div class="detail-head" style="background:${headBg[d.status]||'#0b1120'}">
+      <button class="detail-close" id="detail-close-btn">&#x2715;</button>
+      <h2>${d.name}</h2>
+      <div class="detail-score-big">${d.score}<span style="font-size:1rem;font-weight:400;color:rgba(255,255,255,.5)">/100</span></div>
+      <div class="detail-score-label">Freedom in the World 2026</div>
+      <span class="status-badge ${badgeClass[d.status]}">${STATUS_LABEL[d.status]||d.status}</span>
+      <span class="status-badge" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);margin-left:4px">${chLabel[d.change]||d.change} <span class="${chClass[d.change]}" style="padding:1px 4px;border-radius:8px;font-size:9px">${d.change==='UP'?'▲':d.change==='DN'?'▼':'–'}</span></span>
+    </div>
+    <div class="detail-body">
+      <div class="score-row">
+        <span class="score-name">Political rights</span>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:${Math.max(0,d.pr)/prMax*100}%;background:${headBg[d.status]}"></div></div>
+        <span class="score-val">${d.pr}/${prMax}</span>
+      </div>
+      <div class="score-row">
+        <span class="score-name">Civil liberties</span>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:${Math.max(0,d.cl)/clMax*100}%;background:${headBg[d.status]}"></div></div>
+        <span class="score-val">${d.cl}/${clMax}</span>
+      </div>
+      <p class="detail-note">${d.note}</p>
+      <a class="detail-link" href="https://freedomhouse.org/country/${d.slug}/freedom-world/2026" target="_blank">Full report ↗</a>
+    </div>`;
+  document.getElementById("detail-close-btn").addEventListener("click",closeDetail);
+}
+
+function closeDetail(){
+  document.getElementById("detail-content").style.display="none";
+  document.getElementById("detail-empty").style.display="block";
+  if(selectedIso){d3.select(`[data-iso="${selectedIso}"]`).attr("stroke","#fff").attr("stroke-width","0.5");}
+  selectedIso=null;
+}
+
+document.querySelectorAll(".fbtn").forEach(b=>{
+  b.addEventListener("click",function(){
+    document.querySelectorAll(".fbtn").forEach(x=>x.classList.remove("on"));
+    this.classList.add("on");
+    activeFilter=this.dataset.f;
+    const isStatus=activeFilter==="status";
+    document.getElementById("legend-gradient-row").style.display=isStatus?"none":"flex";
+    document.getElementById("legend-status-row").style.display=isStatus?"flex":"none";
+    const titleMap={score:"Score (0–100):",pr:"Political rights (0–40):",cl:"Civil liberties (0–60):"};
+    document.getElementById("legend-title").textContent=titleMap[activeFilter]||"";
+    d3.selectAll(".country").attr("fill",function(){return getFill(d3.select(this).attr("data-iso"));});
+  });
+});
+
+fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+.then(r=>r.json())
+.then(world=>{
+  const all=topojson.feature(world,world.objects.countries);
+  const african=all.features.filter(f=>AFRICAN_IDS.has(+f.id));
+  const proj=d3.geoMercator().fitExtent([[12,12],[560,620]],{type:"FeatureCollection",features:african});
+  const path=d3.geoPath().projection(proj);
+  const bbox=african.reduce((a,f)=>{const b=path.bounds(f);return{x0:Math.min(a.x0,b[0][0]),y0:Math.min(a.y0,b[0][1]),x1:Math.max(a.x1,b[1][0]),y1:Math.max(a.y1,b[1][1])};},{x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity});
+  const vw=bbox.x1-bbox.x0+24,vh=bbox.y1-bbox.y0+24;
+  const svg=d3.select("#svg").attr("viewBox",`${bbox.x0-12} ${bbox.y0-12} ${vw} ${vh}`).style("width","100%").style("height","auto");
+
+  svg.selectAll(".country")
+    .data(african)
+    .join("path")
+    .attr("class","country")
+    .attr("data-iso",f=>AFRICAN_ISO[+f.id]||"")
+    .attr("d",path)
+    .attr("fill",f=>getFill(AFRICAN_ISO[+f.id]))
+    .on("click",(e,f)=>{
+      const iso=AFRICAN_ISO[+f.id];
+      if(!iso)return;
+      if(selectedIso)d3.select(`[data-iso="${selectedIso}"]`).attr("stroke","#fff").attr("stroke-width","0.5");
+      selectedIso=iso;
+      d3.select(e.currentTarget).attr("stroke","#0b1120").attr("stroke-width","1.8");
+      renderDetail(iso,f.properties.name);
+    });
+
+  const vals=Object.values(FH);
+  document.getElementById("s-free").textContent=vals.filter(d=>d.status==="F").length;
+  document.getElementById("s-partly").textContent=vals.filter(d=>d.status==="PF").length;
+  document.getElementById("s-notfree").textContent=vals.filter(d=>d.status==="NF").length;
+})
+.catch(()=>{document.getElementById("map-wrap").innerHTML="<p style='padding:2rem;font-size:13px;color:#6b7280'>Map failed to load.</p>";});
+</script>
+</body>
+</html>

@@ -2,70 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Africa Sanctions Map</title>
+  <title>Sanctions in Africa</title>
+
+  <link rel="stylesheet" href="style.css" />
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://unpkg.com/topojson-client@3"></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9fafb;
-      text-align: center;
-    }
-
-    svg {
-      width: 900px;
-      height: 600px;
-      margin: auto;
-      display: block;
-    }
-
-    .tooltip {
-      position: absolute;
-      background: white;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      pointer-events: none;
-      opacity: 0;
-      font-size: 14px;
-    }
-
-    .legend {
-      margin-top: 10px;
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      font-size: 14px;
-    }
-
-    .legend span {
-      display: inline-block;
-      width: 15px;
-      height: 15px;
-      margin-right: 6px;
-    }
-  </style>
 </head>
 
 <body>
 
-<h2>Africa Sanctions Map</h2>
+<h2>Sanctions in Africa</h2>
 
-<svg></svg>
-<div id="tooltip" class="tooltip"></div>
-
-<div class="legend">
-  <div><span style="background:#ef4444"></span> Sanctioned</div>
-  <div><span style="background:#22c55e"></span> Not Sanctioned</div>
-  <div><span style="background:#e5e7eb"></span> No Data</div>
-</div>
+<svg width="800" height="700"></svg>
+<div id="tooltip"></div>
 
 <script>
 
 // ==========================
-// ISO mapping (Africa only)
+// ISO mapping
 // ==========================
 const AFRICAN_ISO = {
   12:"DZA",24:"AGO",204:"BEN",72:"BWA",854:"BFA",108:"BDI",132:"CPV",
@@ -80,92 +35,79 @@ const AFRICAN_ISO = {
 };
 
 // ==========================
-// SANCTIONS DATA (embedded)
+// SANCTIONS DATA
 // ==========================
 const SANCTIONS = {
-  // ECOWAS sanctions
-  MLI: { name: "Mali", sanctioned: true, type: "ECOWAS", reason: "Coup" },
-  GIN: { name: "Guinea", sanctioned: true, type: "ECOWAS", reason: "Coup" },
-  BFA: { name: "Burkina Faso", sanctioned: true, type: "ECOWAS", reason: "Coup" },
-  NER: { name: "Niger", sanctioned: true, type: "ECOWAS", reason: "Coup" },
-
-  // Other sanctions
-  SDN: { name: "Sudan", sanctioned: true, type: "US", reason: "Conflict" },
-  SSD: { name: "South Sudan", sanctioned: true, type: "UN/US", reason: "Conflict" },
-  ERI: { name: "Eritrea", sanctioned: true, type: "UN/US", reason: "Security" },
-  ZWE: { name: "Zimbabwe", sanctioned: true, type: "US/EU", reason: "Governance" },
-
-  // Not sanctioned examples
-  DZA: { name: "Algeria", sanctioned: false },
-  MAR: { name: "Morocco", sanctioned: false },
-  ZAF: { name: "South Africa", sanctioned: false },
-  NGA: { name: "Nigeria", sanctioned: false },
-  KEN: { name: "Kenya", sanctioned: false }
+  MLI:{name:"Mali",sanctioned:true},
+  GIN:{name:"Guinea",sanctioned:true},
+  BFA:{name:"Burkina Faso",sanctioned:true},
+  NER:{name:"Niger",sanctioned:true},
+  SDN:{name:"Sudan",sanctioned:true},
+  SSD:{name:"South Sudan",sanctioned:true},
+  ERI:{name:"Eritrea",sanctioned:true},
+  ZWE:{name:"Zimbabwe",sanctioned:true}
 };
 
 // ==========================
-// Color function
-// ==========================
-function sanctionColor(d) {
-  if (!d) return "#e5e7eb";      // no data
-  if (!d.sanctioned) return "#22c55e"; // green
-  return "#ef4444";              // red
+function sanctionColor(d){
+  if(!d) return "#e5e7eb";
+  return d.sanctioned ? "#ef4444" : "#22c55e";
 }
 
+const svg = d3.select("svg");
+const width = +svg.attr("width");
+const height = +svg.attr("height");
+
+const tooltip = d3.select("#tooltip");
+
 // ==========================
-// Draw map
+// LOAD + DRAW
 // ==========================
 fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
-  .then(res => res.json())
-  .then(world => {
+.then(res => res.json())
+.then(world => {
 
-    const countries = topojson.feature(world, world.objects.countries);
+  const countries = topojson.feature(world, world.objects.countries);
 
-    const svg = d3.select("svg");
-    const path = d3.geoPath();
-    const tooltip = d3.select("#tooltip");
+  const africa = {
+    type: "FeatureCollection",
+    features: countries.features.filter(d => AFRICAN_ISO[d.id])
+  };
 
-    svg.selectAll("path")
-      .data(countries.features)
-      .join("path")
-      .attr("d", path)
-      .attr("fill", d => {
-        const iso = AFRICAN_ISO[d.id];
-        const data = SANCTIONS[iso];
-        return sanctionColor(data);
-      })
-      .attr("stroke", "#ffffff")
+  // 🔥 THIS IS THE KEY FIX
+  const projection = d3.geoMercator()
+    .fitSize([width, height], africa);
 
-      .on("mouseover", function(event, d) {
-        const iso = AFRICAN_ISO[d.id];
-        const data = SANCTIONS[iso];
+  const path = d3.geoPath().projection(projection);
 
-        if (!data) {
-          tooltip.style("opacity", 1)
-            .html("No data");
-          return;
-        }
+  svg.selectAll("path")
+    .data(africa.features)
+    .join("path")
+    .attr("d", path)
+    .attr("fill", d => {
+      const iso = AFRICAN_ISO[d.id];
+      return sanctionColor(SANCTIONS[iso]);
+    })
 
-        tooltip.style("opacity", 1)
-          .html(`
-            <strong>${data.name}</strong><br/>
-            ${data.sanctioned ? "Sanctioned ❌" : "Not sanctioned ✅"}<br/>
-            ${data.type ? `Type: ${data.type}<br/>` : ""}
-            ${data.reason ? `Reason: ${data.reason}` : ""}
-          `);
-      })
+    .on("mouseover", (event, d) => {
+      const iso = AFRICAN_ISO[d.id];
+      const data = SANCTIONS[iso];
 
-      .on("mousemove", function(event) {
-        tooltip
-          .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY + 10) + "px");
-      })
+      tooltip.style("opacity",1)
+        .html(data ? `<strong>${data.name}</strong><br/>Sanctioned` : "No data");
+    })
 
-      .on("mouseout", function() {
-        tooltip.style("opacity", 0);
-      });
+    .on("mousemove", (event) => {
+      tooltip
+        .style("left",(event.pageX+10)+"px")
+        .style("top",(event.pageY+10)+"px");
+    })
 
-  });
+    .on("mouseout", () => {
+      tooltip.style("opacity",0);
+    });
+
+});
 
 </script>
 

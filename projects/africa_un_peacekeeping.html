@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UN Peacekeeping in Africa</title>
+<link rel="stylesheet" href="./style.css">
+<link rel="icon" type="image/jpg" href="/img/globe.jpg">
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap");
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"DM Sans",system-ui,sans-serif;color:#1a1a2e;background:#fff}
+.page-hero{background:#0b1120;padding:40px 32px;border-radius:18px;margin:16px 16px 0;position:relative;overflow:hidden}
+.page-hero::before{content:"";position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(192,57,43,.4) 0%,transparent 70%);pointer-events:none}
+.page-hero h1{font-family:"Playfair Display",Georgia,serif;font-size:2rem;color:#fff;position:relative;z-index:1}
+.page-hero p{font-size:0.9rem;color:rgba(255,255,255,.6);margin-top:8px;font-weight:300;position:relative;z-index:1}
+.map-section{display:grid;grid-template-columns:1fr;gap:0;margin:24px 16px}
+@media(min-width:900px){.map-section{grid-template-columns:1fr 320px;gap:20px;align-items:start}}
+.controls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;margin-top:16px}
+.fbtn{padding:5px 12px;font-size:12px;border:1px solid rgba(0,0,0,.15);border-radius:4px;background:#fff;color:#6b7280;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .2s}
+.fbtn.on{background:#0b1120;border-color:#0b1120;color:#fff;font-weight:500}
+.fbtn:hover:not(.on){background:#f4f5f7;color:#0b1120}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280}
+.ld{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+.map-wrap{position:relative;border:1px solid rgba(0,0,0,.08);border-radius:12px;overflow:hidden;background:#f4f5f7;max-height:520px}
+.map-wrap svg{display:block;width:100%;height:auto;max-height:520px}
+.country{stroke:#fff;stroke-width:0.5;cursor:pointer;transition:opacity .12s}
+.country:hover{opacity:.75;stroke-width:1.2}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.sc{background:#f4f5f7;border-radius:8px;padding:10px 12px}
+.sn{font-size:18px;font-weight:500;font-family:"Playfair Display",serif}
+.sl{font-size:10px;color:#6b7280;margin-top:2px}
+.detail-col{position:sticky;top:80px}
+.detail-panel{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;overflow:hidden;min-height:200px}
+.detail-empty{padding:32px 20px;text-align:center}
+.detail-empty-icon{width:48px;height:48px;border-radius:50%;background:#f4f5f7;margin:0 auto 12px;display:flex;align-items:center;justify-content:center}
+.detail-empty p{font-size:13px;color:#6b7280;font-weight:300}
+.detail-head{padding:20px;position:relative}
+.detail-head h2{font-family:"Playfair Display",serif;font-size:1.2rem;color:#fff;margin-bottom:4px}
+.mission-acronym{font-size:1.5rem;font-weight:900;font-family:"Playfair Display",serif;color:#fff;line-height:1;margin-bottom:4px}
+.mission-full{font-size:11px;color:rgba(255,255,255,.6);font-weight:300;line-height:1.4;margin-bottom:8px}
+.detail-close{position:absolute;top:12px;right:14px;background:rgba(255,255,255,.15);border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;line-height:1;font-family:sans-serif}
+.detail-close:hover{background:rgba(255,255,255,.25)}
+.status-pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:500;font-family:"DM Sans",sans-serif}
+.pill-active{background:rgba(29,158,117,.3);color:#d4f7e0}
+.pill-ended{background:rgba(180,178,169,.3);color:rgba(255,255,255,.7)}
+.detail-body{padding:16px 20px}
+.kv-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:12px;gap:12px}
+.kv-row:last-of-type{border-bottom:none}
+.kv-label{color:#6b7280;font-weight:400;flex-shrink:0}
+.kv-val{font-weight:500;color:#0b1120;text-align:right}
+.detail-section-label{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin:12px 0 5px;color:#6b7280}
+.detail-note{font-size:12px;color:#374151;line-height:1.7;font-weight:300}
+.crisis-tag{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500;margin:2px;background:#FCEBEB;color:#791F1F}
+.detail-link{display:inline-block;padding:8px 16px;background:#0b1120;color:#fff;text-decoration:none;border-radius:4px;font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;margin-top:12px;transition:background .2s}
+.detail-link:hover{background:#c0392b}
+.detail-link:visited{color:#fff}
+.hover-hint{font-size:11px;color:#6b7280;margin-top:8px;text-align:center}
+.no-mission-body{padding:20px}
+.no-mission-body p{font-size:13px;color:#374151;font-weight:300;line-height:1.7;margin-bottom:8px}
+.past-tag{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500;background:#f4f5f7;color:#6b7280;margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<div class="page-hero">
+  <h1>UN Peacekeeping Missions in Africa</h1>
+  <p>Five active operations deployed as of March 2026 · Source: UN Peacekeeping / Security Council</p>
+</div>
+
+<div class="map-section">
+  <div class="map-col">
+    <div class="controls">
+      <button class="fbtn on" data-f="all">All</button>
+      <button class="fbtn" data-f="active">Active missions</button>
+      <button class="fbtn" data-f="past">Past missions</button>
+    </div>
+    <div class="legend">
+      <div class="li"><div class="ld" style="background:#378ADD"></div>Active UN mission</div>
+      <div class="li"><div class="ld" style="background:#B4B2A9"></div>Past UN mission (ended)</div>
+      <div class="li"><div class="ld" style="background:#d3d1c7"></div>No UN mission</div>
+    </div>
+    <div class="map-wrap" id="map-wrap">
+      <svg id="svg"></svg>
+    </div>
+    <p class="hover-hint">Click a country to see details</p>
+    <div class="stats">
+      <div class="sc"><div class="sn" id="s-active" style="color:#378ADD">5</div><div class="sl">Active missions in Africa</div></div>
+      <div class="sc"><div class="sn" id="s-personnel" style="color:#0b1120">~55,000</div><div class="sl">Uniformed personnel (approx.)</div></div>
+      <div class="sc"><div class="sn" id="s-budget" style="color:#0b1120">$5.38bn</div><div class="sl">Global peacekeeping budget 2025/26</div></div>
+    </div>
+  </div>
+
+  <div class="detail-col">
+    <div class="detail-panel" id="detail-panel">
+      <div class="detail-empty" id="detail-empty">
+        <div class="detail-empty-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm1 12H9v-2h2v2zm0-4H9V6h2v4z" fill="#b4b2a9"/></svg>
+        </div>
+        <p>Click any country on the map to see its UN peacekeeping history and mission details.</p>
+      </div>
+      <div id="detail-content" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+// status: "active" | "past" | null
+// For disputed/shared territories (Abyei straddles Sudan/South Sudan), both are marked active
+const MISSIONS = {
+  // ACTIVE MISSIONS
+  CAF:{
+    status:"active",
+    acronym:"MINUSCA",
+    full:"United Nations Multidimensional Integrated Stabilization Mission in the Central African Republic",
+    established:"Apr 2014",
+    mandateExpiry:"Nov 2026",
+    scRes:"Res. 2800 (2025)",
+    authorisedStrength:"14,046 military + police",
+    headBg:"#185FA5",
+    context:"MINUSCA was established in 2014 as the CAR's government collapsed and armed groups seized most of the territory. It supports civilian protection, the 2019 peace agreement with 14 armed groups, the extension of state authority, and — most recently — the electoral cycle that concluded in December 2025 with four simultaneous polls including the first municipal elections in 37 years.",
+    challenges:"MINUSCA operates alongside Russian Wagner Group (now Africa Corps) forces, whose presence has created tensions. The mission has faced significant allegations of sexual exploitation and abuse. A severe UN funding crisis in 2025–26 is forcing contingency cuts to patrols and field offices.",
+    url:"https://minusca.unmissions.org"
+  },
+  COD:{
+    status:"active",
+    acronym:"MONUSCO",
+    full:"United Nations Organization Stabilization Mission in the Democratic Republic of the Congo",
+    established:"Jul 2010 (MONUC from 1999)",
+    mandateExpiry:"Ongoing — withdrawal on hold",
+    scRes:"Res. 2666 (2022) and subsequent",
+    authorisedStrength:"~14,000 military + 660 observers + 1,640 police",
+    headBg:"#185FA5",
+    context:"MONUSCO is the UN's longest-running and largest African mission, operational since 1999. The DRC requested its full withdrawal, which was agreed for end of 2024 — but the M23 seizure of Goma in January 2025 forced an indefinite halt to withdrawal planning. The eastern provinces remain in active conflict with dozens of armed groups and over 7 million displaced people.",
+    challenges:"MONUSCO faces a fundamental legitimacy crisis in the DRC: widespread civilian protests, government calls for withdrawal, and allegations of ineffectiveness against M23. The M23/Rwanda conflict (2024–25) has dramatically worsened the security situation the mission was meant to address.",
+    url:"https://monusco.unmissions.org"
+  },
+  ESH:{
+    status:"active",
+    acronym:"MINURSO",
+    full:"United Nations Mission for the Organization of a Referendum in Western Sahara",
+    established:"Apr 1991",
+    mandateExpiry:"Oct 2026",
+    scRes:"Res. 690 (1991)",
+    authorisedStrength:"~200 military observers",
+    headBg:"#185FA5",
+    context:"MINURSO is the UN's oldest unresolved mission — established in 1991 to organise a self-determination referendum for Western Sahara that has never taken place. Morocco controls 80% of the territory; the Polisario Front controls the remainder from Algeria. The mission monitors the 1991 ceasefire but notably has no human rights monitoring mandate — a longstanding controversy.",
+    challenges:"No progress toward a referendum in over 30 years. Fighting resumed briefly in 2020 after Morocco's military operation in the buffer zone. MINURSO is uniquely limited — it cannot report on human rights, making it one of the most criticised UN missions for inadequate mandate.",
+    url:"https://minurso.unmissions.org"
+  },
+  SSD:{
+    status:"active",
+    acronym:"UNMISS",
+    full:"United Nations Mission in the Republic of South Sudan",
+    established:"Jul 2011",
+    mandateExpiry:"Apr 2026",
+    scRes:"Res. 2779 (2025)",
+    authorisedStrength:"~17,000 military + 2,101 police",
+    headBg:"#185FA5",
+    context:"UNMISS was established on South Sudan's independence day in 2011. It has operated through multiple cycles of civil war (2013–2015, 2016) and the 2018 peace agreement. The transitional government has repeatedly obstructed the mission — restricting its freedom of movement, ordering it to vacate its Tomping base, and detaining opposition VP Riek Machar. South Sudan is on the brink of renewed civil war in 2025–26.",
+    challenges:"UNMISS faces extreme operational challenges: obstructed access, government hostility, civilian atrocities including barrel bombing, and a collapsed peace process. Elections scheduled for December 2026 have been twice postponed. The US called South Sudan's government illegitimate in Security Council debates over the May 2025 mandate renewal.",
+    url:"https://unmiss.unmissions.org"
+  },
+  SDN:{
+    status:"active",
+    acronym:"UNISFA",
+    full:"United Nations Interim Security Force for Abyei",
+    established:"Jun 2011",
+    mandateExpiry:"Nov 2026",
+    scRes:"Res. 2802 (2025)",
+    authorisedStrength:"~3,250 troops + 640 police",
+    headBg:"#185FA5",
+    context:"UNISFA monitors the disputed Abyei territory — claimed by both Sudan and South Sudan — which was left without a final status determination when South Sudan gained independence in 2011. The mission, composed predominantly of Ethiopian troops, protects civilians on historic Ngok Dinka and Misseriya pastoralist migration routes and operates a joint border verification mechanism with both states. Sudan's civil war (SAF vs RSF since April 2023) has severely complicated the regional security context.",
+    challenges:"The mission's mandate has been extended 14+ times without resolution of Abyei's political status. Sudan's catastrophic civil war makes coordinating with the SAF increasingly difficult. The US tied the November 2025 mandate renewal to benchmarks requiring Sudan and South Sudan to form a joint police force and fully demilitarize — with future renewals conditional on compliance.",
+    url:"https://unisfa.unmissions.org"
+  },
+  // PAST MISSIONS (selected major ones)
+  MLI:{
+    status:"past",
+    acronym:"MINUSMA",
+    full:"United Nations Multidimensional Integrated Stabilization Mission in Mali",
+    established:"Apr 2013",
+    ended:"Dec 2023",
+    headBg:"#5F5E5A",
+    context:"MINUSMA was established in 2013 to stabilise Mali after Tuareg and Islamist groups seized the north. The military junta that took power in 2020–21 demanded the mission's withdrawal in June 2023; the UN Security Council terminated the mandate on 30 June 2023 and the mission drew down over six months. With ~13,000 personnel at peak, it suffered the highest UN peacekeeper casualties of any active mission. MINUSMA's end is widely seen as emblematic of the crisis of UN peacekeeping in Africa.",
+    url:"https://minusma.unmissions.org"
+  },
+  LBR:{
+    status:"past",
+    acronym:"UNMIL",
+    full:"United Nations Mission in Liberia",
+    established:"Sep 2003",
+    ended:"Mar 2018",
+    headBg:"#5F5E5A",
+    context:"UNMIL supported Liberia's transition from 14 years of civil war. At its peak it deployed ~15,000 personnel. Handed over security to Liberian authorities progressively from 2012, and formally closed in March 2018 — considered one of UN peacekeeping's relative success stories in the region.",
+    url:"https://unmil.unmissions.org"
+  },
+  CIV:{
+    status:"past",
+    acronym:"UNOCI",
+    full:"United Nations Operation in Côte d'Ivoire",
+    established:"Apr 2004",
+    ended:"Jun 2017",
+    headBg:"#5F5E5A",
+    context:"UNOCI supported post-civil-war stabilisation and the 2011 electoral crisis that followed President Gbagbo's refusal to concede. After Ouattara took power, the mission oversaw disarmament and supported national reconciliation. Mandate terminated June 2017 after 13 years.",
+    url:"https://unoci.unmissions.org"
+  },
+  BDI:{
+    status:"past",
+    acronym:"ONUB",
+    full:"United Nations Operation in Burundi",
+    established:"Jun 2004",
+    ended:"Dec 2006",
+    headBg:"#5F5E5A",
+    context:"ONUB supported the implementation of the Arusha Peace Agreement and oversaw DDR of combatants. It was succeeded by a UN political mission (BINUB) after the 2005 elections.",
+    url:"https://peacekeeping.un.org"
+  },
+  ETH:{
+    status:"past",
+    acronym:"UNMEE",
+    full:"United Nations Mission in Ethiopia and Eritrea",
+    established:"Jul 2000",
+    ended:"Jul 2008",
+    headBg:"#5F5E5A",
+    context:"UNMEE monitored the ceasefire and demarcation of the border following the 1998–2000 Eritrea–Ethiopia War. The mission was terminated in 2008 after Eritrea expelled its staff and cut off fuel supplies.",
+    url:"https://peacekeeping.un.org"
+  },
+  MOZ:{
+    status:"past",
+    acronym:"ONUMOZ",
+    full:"United Nations Operation in Mozambique",
+    established:"Dec 1992",
+    ended:"Jan 1995",
+    headBg:"#5F5E5A",
+    context:"ONUMOZ monitored the 1992 General Peace Agreement ending Mozambique's civil war, oversaw demobilisation of FRELIMO and RENAMO forces, and supported the 1994 general elections — Mozambique's first multiparty vote.",
+    url:"https://peacekeeping.un.org"
+  },
+  RWA:{
+    status:"past",
+    acronym:"UNAMIR",
+    full:"United Nations Assistance Mission for Rwanda",
+    established:"Oct 1993",
+    ended:"Mar 1996",
+    headBg:"#5F5E5A",
+    context:"UNAMIR was present during the 1994 genocide, when approximately 800,000 Tutsi and moderate Hutu were killed in 100 days. Force commander General Roméo Dallaire's repeated requests for reinforcement were denied. The mission's failure is one of the most studied cases of peacekeeping inadequacy in UN history.",
+    url:"https://peacekeeping.un.org"
+  },
+  SOM:{
+    status:"past",
+    acronym:"UNOSOM II",
+    full:"United Nations Operation in Somalia II",
+    established:"Mar 1993",
+    ended:"Mar 1995",
+    headBg:"#5F5E5A",
+    context:"UNOSOM II succeeded the US-led UNITAF in 1993 but descended into conflict with faction leader Aidid's forces. The Battle of Mogadishu (Black Hawk Down, Oct 1993) killed 18 US soldiers and led to US withdrawal. Somalia remains one of the most studied cases of peacekeeping failure; the AU mission ATMIS currently operates there.",
+    url:"https://peacekeeping.un.org"
+  },
+  AGO:{
+    status:"past",
+    acronym:"MONUA",
+    full:"United Nations Observer Mission in Angola",
+    established:"Jul 1997",
+    ended:"Feb 1999",
+    headBg:"#5F5E5A",
+    context:"MONUA was the last in a series of UN missions in Angola (UNAVEM I–III, then MONUA) spanning 1989–1999. The mission ended after UNITA renewed warfare and shot down two UN aircraft. Angola's civil war only ended in 2002 without a UN mission.",
+    url:"https://peacekeeping.un.org"
+  },
+  ZAF:{
+    status:"past",
+    acronym:"UNTAG",
+    full:"United Nations Transition Assistance Group (Namibia/South Africa)",
+    established:"Apr 1989",
+    ended:"Mar 1990",
+    headBg:"#5F5E5A",
+    context:"UNTAG oversaw Namibia's transition to independence from South African administration, monitoring the ceasefire, the withdrawal of South African troops, and the 1989 elections — Namibia's first. Often cited as one of UN peacekeeping's early success stories.",
+    url:"https://peacekeeping.un.org"
+  }
+};
+
+// Western Sahara shares ISO 732 in world-atlas; map it alongside Morocco
+const AFRICAN_ISO={12:"DZA",24:"AGO",204:"BEN",72:"BWA",854:"BFA",108:"BDI",132:"CPV",120:"CMR",140:"CAF",148:"TCD",174:"COM",180:"COD",178:"COG",384:"CIV",262:"DJI",818:"EGY",226:"GNQ",232:"ERI",748:"SWZ",231:"ETH",266:"GAB",270:"GMB",288:"GHA",324:"GIN",624:"GNB",404:"KEN",426:"LSO",430:"LBR",434:"LBY",450:"MDG",454:"MWI",466:"MLI",478:"MRT",480:"MUS",504:"MAR",508:"MOZ",516:"NAM",562:"NER",566:"NGA",646:"RWA",678:"STP",686:"SEN",694:"SLE",706:"SOM",710:"ZAF",728:"SSD",729:"SDN",834:"TZA",768:"TGO",788:"TUN",800:"UGA",894:"ZMB",716:"ZWE",690:"SYC",732:"ESH"};
+const AFRICAN_IDS=new Set(Object.keys(AFRICAN_ISO).map(Number));
+
+const COL_ACTIVE="#378ADD";
+const COL_PAST="#888780";
+const COL_NONE="#d3d1c7";
+
+let activeFilter="all";
+let selectedIso=null;
+
+function getFill(iso){
+  const d=MISSIONS[iso];
+  if(!d) return COL_NONE;
+  if(activeFilter==="active") return d.status==="active"?COL_ACTIVE:COL_NONE;
+  if(activeFilter==="past") return d.status==="past"?COL_PAST:COL_NONE;
+  return d.status==="active"?COL_ACTIVE:COL_PAST;
+}
+
+function renderDetail(iso, geoName){
+  const d=MISSIONS[iso];
+  const content=document.getElementById("detail-content");
+  const empty=document.getElementById("detail-empty");
+  empty.style.display="none";
+  content.style.display="block";
+
+  if(!d){
+    content.innerHTML=`
+      <div class="detail-head" style="background:#0b1120">
+        <button class="detail-close" id="dcb">&#x2715;</button>
+        <h2>${geoName}</h2>
+        <span class="status-pill pill-ended" style="margin-top:6px">No UN peacekeeping mission</span>
+      </div>
+      <div class="no-mission-body">
+        <p>No UN peacekeeping mission has been deployed to ${geoName}.</p>
+        <a class="detail-link" href="https://peacekeeping.un.org/en/our-operations" target="_blank">All UN missions ↗</a>
+      </div>`;
+    document.getElementById("dcb").addEventListener("click",closeDetail);
+    return;
+  }
+
+  const isActive=d.status==="active";
+  const pillClass=isActive?"pill-active":"pill-ended";
+  const pillLabel=isActive?"Active mission":"Ended "+d.ended;
+
+  const activeRows=isActive?`
+    <div class="kv-row"><span class="kv-label">Established</span><span class="kv-val">${d.established}</span></div>
+    <div class="kv-row"><span class="kv-label">Mandate expiry</span><span class="kv-val">${d.mandateExpiry}</span></div>
+    <div class="kv-row"><span class="kv-label">Authority</span><span class="kv-val">${d.scRes}</span></div>
+    <div class="kv-row"><span class="kv-label">Authorised strength</span><span class="kv-val">${d.authorisedStrength}</span></div>`:`
+    <div class="kv-row"><span class="kv-label">Established</span><span class="kv-val">${d.established}</span></div>
+    <div class="kv-row"><span class="kv-label">Ended</span><span class="kv-val">${d.ended}</span></div>`;
+
+  const challengesBlock=d.challenges?`
+    <div class="detail-section-label">Current challenges</div>
+    <p class="detail-note" style="margin-bottom:10px">${d.challenges}</p>`:"";
+
+  content.innerHTML=`
+    <div class="detail-head" style="background:${d.headBg||"#0b1120"}">
+      <button class="detail-close" id="dcb">&#x2715;</button>
+      <div class="mission-acronym">${d.acronym}</div>
+      <div class="mission-full">${d.full}</div>
+      <span class="status-pill ${pillClass}">${pillLabel}</span>
+    </div>
+    <div class="detail-body">
+      ${activeRows}
+      <div class="detail-section-label" style="margin-top:12px">Background</div>
+      <p class="detail-note" style="margin-bottom:10px">${d.context}</p>
+      ${challengesBlock}
+      <a class="detail-link" href="${d.url}" target="_blank">${isActive?"Mission website":"UN record"} ↗</a>
+    </div>`;
+  document.getElementById("dcb").addEventListener("click",closeDetail);
+}
+
+function closeDetail(){
+  document.getElementById("detail-content").style.display="none";
+  document.getElementById("detail-empty").style.display="block";
+  if(selectedIso){d3.select(`[data-iso="${selectedIso}"]`).attr("stroke","#fff").attr("stroke-width","0.5");}
+  selectedIso=null;
+}
+
+document.querySelectorAll(".fbtn").forEach(b=>{
+  b.addEventListener("click",function(){
+    document.querySelectorAll(".fbtn").forEach(x=>x.classList.remove("on"));
+    this.classList.add("on");
+    activeFilter=this.dataset.f;
+    d3.selectAll(".country").attr("fill",function(){return getFill(d3.select(this).attr("data-iso"));});
+  });
+});
+
+fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+.then(r=>r.json())
+.then(world=>{
+  const all=topojson.feature(world,world.objects.countries);
+  const african=all.features.filter(f=>AFRICAN_IDS.has(+f.id));
+  const proj=d3.geoMercator().fitExtent([[12,12],[560,620]],{type:"FeatureCollection",features:african});
+  const path=d3.geoPath().projection(proj);
+  const bbox=african.reduce((a,f)=>{const b=path.bounds(f);return{x0:Math.min(a.x0,b[0][0]),y0:Math.min(a.y0,b[0][1]),x1:Math.max(a.x1,b[1][0]),y1:Math.max(a.y1,b[1][1])};},{x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity});
+  const vw=bbox.x1-bbox.x0+24,vh=bbox.y1-bbox.y0+24;
+  const svg=d3.select("#svg").attr("viewBox",`${bbox.x0-12} ${bbox.y0-12} ${vw} ${vh}`).style("width","100%").style("height","auto");
+
+  svg.selectAll(".country")
+    .data(african)
+    .join("path")
+    .attr("class","country")
+    .attr("data-iso",f=>AFRICAN_ISO[+f.id]||"")
+    .attr("d",path)
+    .attr("fill",f=>getFill(AFRICAN_ISO[+f.id]))
+    .on("click",(e,f)=>{
+      const iso=AFRICAN_ISO[+f.id];
+      if(!iso)return;
+      if(selectedIso)d3.select(`[data-iso="${selectedIso}"]`).attr("stroke","#fff").attr("stroke-width","0.5");
+      selectedIso=iso;
+      d3.select(e.currentTarget).attr("stroke","#0b1120").attr("stroke-width","1.8");
+      renderDetail(iso,f.properties.name);
+    });
+})
+.catch(()=>{document.getElementById("map-wrap").innerHTML="<p style='padding:2rem;font-size:13px;color:#6b7280'>Map failed to load.</p>";});
+</script>
+</body>
+</html>

@@ -40,7 +40,62 @@
         }
 
         .other-projects-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
             margin-bottom: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .other-projects-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1100px) {
+            .other-projects-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .other-projects-grid article {
+            width: 100%;
+        }
+
+        .other-projects-grid img {
+            width: 100%;
+            height: auto;
+        }
+
+        .project-pages {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .project-page {
+            appearance: none;
+            border: 1px solid rgba(17, 24, 39, 0.18);
+            background: #fff;
+            color: #374151;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .project-page:hover {
+            border-color: rgba(17, 24, 39, 0.4);
+            color: #111827;
+        }
+
+        .project-page.on {
+            background: #111827;
+            border-color: #111827;
+            color: #fff;
         }
     </style>
 </head>
@@ -203,6 +258,10 @@
                     width="300px"><br><br>
         </article>
         </section>
+        <div class="project-pages" aria-label="Project pages">
+            <button type="button" class="project-page on" data-page="1">1</button>
+            <button type="button" class="project-page" data-page="2">2</button>
+        </div>
         </section>
     <footer>
             <a href="https://www.linkedin.com/in/michaela-gyasi-agyei/" title="LinkedIn">
@@ -220,24 +279,63 @@
 <script src="script.js"></script>
 <script>
     const projectFilterButtons = document.querySelectorAll('.project-filter');
-    const otherProjectCards = document.querySelectorAll('.other-projects-grid article[data-category], .articles-flex article[data-category]');
+    const projectPageButtons = document.querySelectorAll('.project-page');
+    const otherProjectCards = document.querySelectorAll('.other-projects-grid article[data-category]');
+    const pageSize = 6;
 
-    function applyProjectFilter(category) {
+    let activeCategory = 'all';
+    let activePage = 1;
+
+    function getFilteredCards() {
+        return Array.from(otherProjectCards).filter(card => {
+            return activeCategory === 'all' || card.dataset.category === activeCategory;
+        });
+    }
+
+    function applyProjectFilter() {
+        const filteredCards = getFilteredCards();
+        const totalPages = Math.max(1, Math.ceil(filteredCards.length / pageSize));
+        activePage = Math.min(activePage, totalPages);
+
         otherProjectCards.forEach(card => {
-            const matches = category === 'all' || card.dataset.category === category;
-            card.style.display = matches ? '' : 'none';
+            card.style.display = 'none';
+        });
+
+        const startIndex = (activePage - 1) * pageSize;
+        filteredCards.slice(startIndex, startIndex + pageSize).forEach(card => {
+            card.style.display = '';
         });
 
         projectFilterButtons.forEach(button => {
-            button.classList.toggle('on', button.dataset.category === category);
+            button.classList.toggle('on', button.dataset.category === activeCategory);
+        });
+
+        projectPageButtons.forEach(button => {
+            const pageNumber = Number(button.dataset.page);
+            const shouldShow = totalPages > 1;
+            button.style.display = shouldShow ? '' : 'none';
+            button.classList.toggle('on', pageNumber === activePage);
         });
     }
 
     projectFilterButtons.forEach(button => {
-        button.addEventListener('click', () => applyProjectFilter(button.dataset.category));
+        button.addEventListener('click', () => {
+            activeCategory = button.dataset.category;
+            activePage = 1;
+            applyProjectFilter();
+        });
     });
 
-    applyProjectFilter('all');
+    projectPageButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            activePage = Number(button.dataset.page);
+            applyProjectFilter();
+        });
+    });
+
+    activeCategory = 'all';
+    activePage = 1;
+    applyProjectFilter();
 </script>
 </body>
 </html>

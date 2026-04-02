@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Africa Oil, Gas and Strategic Resources</title>
+  <link rel="icon" type="image/jpg" href="/img/globe.jpg" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://unpkg.com/topojson-client@3"></script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap");
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: #f7f8fa;
+      color: #111827;
+      padding: 16px;
+    }
+
+    .hero {
+      background: linear-gradient(120deg, #0f172a 0%, #155e75 100%);
+      color: #fff;
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -48px;
+      top: -42px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(234, 179, 8, 0.35) 0%, rgba(234, 179, 8, 0) 70%);
+    }
+
+    h1 {
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 1.95rem;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .subtitle {
+      font-size: 0.92rem;
+      color: rgba(255, 255, 255, 0.86);
+      max-width: 920px;
+      position: relative;
+      z-index: 1;
+      line-height: 1.5;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid rgba(17, 24, 39, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .map-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .fbtn {
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid rgba(17, 24, 39, 0.16);
+      background: #fff;
+      color: #374151;
+      border-radius: 999px;
+      padding: 6px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1;
+      font: inherit;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .fbtn:hover { border-color: rgba(17, 24, 39, 0.35); color: #111827; }
+    .fbtn.on { background: #111827; border-color: #111827; color: #fff; }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      flex: 0 0 auto;
+    }
+
+    .map-wrap {
+      border: 1px solid rgba(17, 24, 39, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f3f4f6;
+    }
+
+    #map { display: block; width: 100%; height: auto; }
+
+    .country {
+      stroke: #fff;
+      stroke-width: 0.6;
+      vector-effect: non-scaling-stroke;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+
+    .country:hover { opacity: 0.82; }
+    .country.selected { stroke: #ffffff; stroke-width: 1.1; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .stat { background: #f9fafb; border-radius: 8px; padding: 10px; }
+    .stat-num { font-family: "Playfair Display", Georgia, serif; font-size: 1.6rem; color: #0f172a; line-height: 1; }
+    .stat-label { margin-top: 4px; color: #6b7280; font-size: 0.74rem; }
+
+    #tooltip {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0;
+      background: rgba(15, 23, 42, 0.95);
+      color: #fff;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      max-width: 240px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .detail-panel {
+      background: #fff;
+      border: 1px solid rgba(17, 24, 39, 0.12);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .detail-empty {
+      padding: 24px 16px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .detail-head {
+      background: #111827;
+      color: #fff;
+      padding: 16px;
+      position: relative;
+    }
+
+    .detail-head h2 {
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 1.42rem;
+      margin-bottom: 6px;
+      line-height: 1.1;
+    }
+
+    .detail-tag {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 0.72rem;
+      margin-right: 6px;
+      margin-top: 6px;
+    }
+
+    .detail-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      border: none;
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .detail-body { padding: 14px 16px 16px; color: #374151; }
+    .detail-row { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid rgba(17, 24, 39, 0.08); padding-bottom: 6px; margin-bottom: 8px; font-size: 0.84rem; }
+    .detail-row strong { color: #111827; font-weight: 500; }
+    .detail-text { font-size: 0.84rem; line-height: 1.62; }
+
+    .chip-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .chip { background: #ecfeff; color: #155e75; border-radius: 999px; padding: 4px 9px; font-size: 0.72rem; }
+
+    .source-wrap { margin-top: 12px; }
+    .source-title { font-size: 0.76rem; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.03em; }
+    .source-links { display: flex; flex-wrap: wrap; gap: 8px; }
+    .source-link {
+      font-size: 0.74rem;
+      color: #0f766e;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(15, 118, 110, 0.35);
+    }
+    .source-link:hover { color: #134e4a; border-bottom-color: #134e4a; }
+
+    .note {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    @media (min-width: 920px) {
+      body { padding: 22px; }
+      .panel { padding: 16px; }
+      .map-grid { grid-template-columns: minmax(0, 1fr) 330px; }
+      .detail-wrap { position: sticky; top: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>Oil, Gas and Strategic Resources in Africa</h1>
+    <p class="subtitle">Map of major producers across hydrocarbons and key extractive resources not covered in the critical minerals map. Click a country to focus it and view details.</p>
+  </div>
+
+  <section class="panel">
+    <div class="map-grid">
+      <div>
+        <div class="filters">
+          <button class="fbtn on" data-filter="all" type="button">All countries</button>
+          <button class="fbtn" data-filter="oil" type="button"><span class="swatch" style="background:#0ea5e9"></span>Oil</button>
+          <button class="fbtn" data-filter="gas" type="button"><span class="swatch" style="background:#8b5cf6"></span>Gas</button>
+          <button class="fbtn" data-filter="gold" type="button"><span class="swatch" style="background:#eab308"></span>Gold</button>
+          <button class="fbtn" data-filter="uranium" type="button"><span class="swatch" style="background:#22c55e"></span>Uranium</button>
+          <button class="fbtn" data-filter="phosphates" type="button"><span class="swatch" style="background:#f97316"></span>Phosphates</button>
+          <button class="fbtn" data-filter="diamonds" type="button"><span class="swatch" style="background:#ec4899"></span>Diamonds</button>
+        </div>
+
+        <div class="map-wrap">
+          <svg id="map" viewBox="0 0 980 760" aria-label="Map of oil, gas and strategic resources in Africa"></svg>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="stat-num" id="s-covered">-</div><div class="stat-label">Countries with mapped profiles</div></div>
+          <div class="stat"><div class="stat-num" id="s-filters">6</div><div class="stat-label">Resource categories</div></div>
+          <div class="stat"><div class="stat-num" id="s-top">-</div><div class="stat-label">Largest category (countries)</div></div>
+          <div class="stat"><div class="stat-num" id="s-multi">-</div><div class="stat-label">Multi-resource countries</div></div>
+        </div>
+
+        <p class="note">Source-backed educational map using EIA, OPEC ASB, USGS commodities summaries, World Gold Council and Kimberley Process references. Last updated: April 2026.</p>
+      </div>
+
+      <aside class="detail-wrap">
+        <div class="detail-panel">
+          <div class="detail-empty" id="detail-empty">Click a country to see resource category, additional resources, and quick notes.</div>
+          <div id="detail-content" style="display:none;"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <div id="tooltip"></div>
+
+  <script>
+    const AFRICAN_ISO = {
+      12: "DZA", 24: "AGO", 204: "BEN", 72: "BWA", 854: "BFA", 108: "BDI", 132: "CPV",
+      120: "CMR", 140: "CAF", 148: "TCD", 174: "COM", 178: "COG", 180: "COD",
+      384: "CIV", 262: "DJI", 818: "EGY", 226: "GNQ", 232: "ERI", 748: "SWZ",
+      231: "ETH", 266: "GAB", 270: "GMB", 288: "GHA", 324: "GIN", 624: "GNB",
+      404: "KEN", 426: "LSO", 430: "LBR", 434: "LBY", 450: "MDG", 454: "MWI",
+      466: "MLI", 478: "MRT", 480: "MUS", 504: "MAR", 508: "MOZ", 516: "NAM",
+      562: "NER", 566: "NGA", 646: "RWA", 678: "STP", 686: "SEN", 690: "SYC",
+      694: "SLE", 706: "SOM", 710: "ZAF", 728: "SSD", 729: "SDN", 732: "ESH",
+      834: "TZA", 768: "TGO", 788: "TUN", 800: "UGA", 894: "ZMB", 716: "ZWE"
+    };
+
+    const COUNTRY_NAMES = {
+      DZA: "Algeria", AGO: "Angola", BEN: "Benin", BWA: "Botswana", BFA: "Burkina Faso", BDI: "Burundi", CPV: "Cabo Verde",
+      CMR: "Cameroon", CAF: "Central African Republic", TCD: "Chad", COM: "Comoros", COG: "Republic of the Congo", COD: "DR Congo",
+      CIV: "Cote d'Ivoire", DJI: "Djibouti", EGY: "Egypt", GNQ: "Equatorial Guinea", ERI: "Eritrea", SWZ: "Eswatini",
+      ETH: "Ethiopia", GAB: "Gabon", GMB: "The Gambia", GHA: "Ghana", GIN: "Guinea", GNB: "Guinea-Bissau",
+      KEN: "Kenya", LSO: "Lesotho", LBR: "Liberia", LBY: "Libya", MDG: "Madagascar", MWI: "Malawi",
+      MLI: "Mali", MRT: "Mauritania", MUS: "Mauritius", MAR: "Morocco", MOZ: "Mozambique", NAM: "Namibia",
+      NER: "Niger", NGA: "Nigeria", RWA: "Rwanda", STP: "Sao Tome and Principe", SEN: "Senegal", SYC: "Seychelles",
+      SLE: "Sierra Leone", SOM: "Somalia", ZAF: "South Africa", SSD: "South Sudan", SDN: "Sudan", ESH: "Western Sahara",
+      TZA: "Tanzania", TGO: "Togo", TUN: "Tunisia", UGA: "Uganda", ZMB: "Zambia", ZWE: "Zimbabwe"
+    };
+
+    const COLORS = {
+      oil: "#0ea5e9",
+      gas: "#8b5cf6",
+      gold: "#eab308",
+      uranium: "#22c55e",
+      phosphates: "#f97316",
+      diamonds: "#ec4899",
+      other: "#d1d5db",
+      muted: "#e5e7eb"
+    };
+
+    const SOURCE_INDEX = {
+      oil: { label: "EIA International", url: "https://www.eia.gov/international/" },
+      gas: { label: "OPEC ASB", url: "https://asb.opec.org/" },
+      gold: { label: "World Gold Council", url: "https://www.gold.org/goldhub/data" },
+      uranium: { label: "World Nuclear Association", url: "https://world-nuclear.org/information-library/country-profiles/others/africa.aspx" },
+      phosphates: { label: "USGS Commodities", url: "https://www.usgs.gov/centers/national-minerals-information-center/mineral-commodity-summaries" },
+      diamonds: { label: "Kimberley Process", url: "https://www.kimberleyprocess.com/en/statistics" },
+      other: { label: "USGS Commodities", url: "https://www.usgs.gov/centers/national-minerals-information-center/mineral-commodity-summaries" }
+    };
+
+    const RESOURCE_DATA = {
+      NGA: { primary: "oil", resources: ["Oil", "Gas"], note: "Major hydrocarbon producer with large onshore and offshore assets." },
+      AGO: { primary: "oil", resources: ["Oil", "Gas", "Diamonds"], note: "Large offshore oil sector and growing gas monetization projects." },
+      LBY: { primary: "oil", resources: ["Oil", "Gas"], note: "Significant reserves and export-oriented production infrastructure." },
+      GAB: { primary: "oil", resources: ["Oil", "Manganese"], note: "Oil remains central to exports alongside strong mining output." },
+      COG: { primary: "oil", resources: ["Oil", "Gas"], note: "Hydrocarbons dominate exports, with offshore production capacity." },
+      GNQ: { primary: "gas", resources: ["Gas", "Oil"], note: "Established gas and LNG profile with offshore fields." },
+      DZA: { primary: "gas", resources: ["Gas", "Oil", "Phosphates"], note: "One of Africa's largest gas producers with integrated export routes." },
+      EGY: { primary: "gas", resources: ["Gas", "Oil", "Gold"], note: "Large gas fields and regional energy hub ambitions." },
+      MOZ: { primary: "gas", resources: ["Gas", "Graphite"], note: "Major LNG projects shape long-term export potential." },
+      MRT: { primary: "gas", resources: ["Gas", "Iron ore"], note: "Offshore gas developments are transforming the energy profile." },
+      SEN: { primary: "gas", resources: ["Gas", "Oil", "Phosphates"], note: "Emerging producer with new offshore energy developments." },
+      GHA: { primary: "gold", resources: ["Gold", "Oil", "Gas"], note: "Leading gold producer with offshore hydrocarbons." },
+      MLI: { primary: "gold", resources: ["Gold", "Lithium"], note: "Gold is a core export earner, with expanding mineral pipeline." },
+      BFA: { primary: "gold", resources: ["Gold", "Manganese"], note: "Gold production is central to the country's mining sector." },
+      TZA: { primary: "gold", resources: ["Gold", "Gas", "Graphite"], note: "Strong gold production and growing gas sector." },
+      ZAF: { primary: "gold", resources: ["Gold", "Platinum", "Diamonds"], note: "Diversified mining giant with deep precious-metal value chains." },
+      NER: { primary: "uranium", resources: ["Uranium", "Oil"], note: "Uranium remains strategically significant alongside newer oil output." },
+      NAM: { primary: "uranium", resources: ["Uranium", "Diamonds"], note: "Large uranium operations and offshore/onshore diamond production." },
+      MAR: { primary: "phosphates", resources: ["Phosphates", "Gas"], note: "Global-scale phosphate production and fertilizer value-chain strength." },
+      TUN: { primary: "phosphates", resources: ["Phosphates", "Oil", "Gas"], note: "Phosphates and hydrocarbons both contribute to industrial output." },
+      TGO: { primary: "phosphates", resources: ["Phosphates"], note: "Phosphate mining remains an important extractive activity." },
+      BWA: { primary: "diamonds", resources: ["Diamonds", "Copper", "Nickel"], note: "Diamonds are central to exports and long-term fiscal planning." },
+      COD: { primary: "diamonds", resources: ["Diamonds", "Copper", "Cobalt", "Gold"], note: "Multi-resource powerhouse with substantial diamond and metal output." },
+      ZWE: { primary: "diamonds", resources: ["Diamonds", "Gold", "Platinum"], note: "Precious resources underpin major parts of the mining sector." },
+      LBR: { primary: "other", resources: ["Iron ore", "Gold"], note: "Resource profile is notable, but not in the primary filter categories." },
+      GIN: { primary: "other", resources: ["Bauxite", "Gold"], note: "Large bauxite producer with wider mineral relevance." }
+    };
+
+    function getIsoFromId(id) {
+      const raw = String(id);
+      const normalized = raw.replace(/^0+/, "") || "0";
+      return AFRICAN_ISO[raw] || AFRICAN_ISO[normalized] || AFRICAN_ISO[Number(normalized)] || "";
+    }
+
+    function getCountryData(iso) {
+      return RESOURCE_DATA[iso] || null;
+    }
+
+    function getCountryColor(iso, filter) {
+      const data = getCountryData(iso);
+      const category = data ? data.primary : "other";
+      const base = COLORS[category] || COLORS.other;
+      if (filter === "all") return base;
+
+      if (!data) return COLORS.muted;
+
+      const hasSelectedResource =
+        category === filter ||
+        data.resources.some(r => resourceKey(r) === filter);
+
+      if (hasSelectedResource) return COLORS[filter] || base;
+      return COLORS.muted;
+    }
+
+    function titleCaseCategory(c) {
+      if (c === "phosphates") return "Phosphates";
+      return c.charAt(0).toUpperCase() + c.slice(1);
+    }
+
+    function resourceKey(label) {
+      const k = String(label).toLowerCase().replace(/\s+/g, "-");
+      if (k === "oil" || k === "gas" || k === "gold" || k === "uranium" || k === "phosphates" || k === "diamonds") {
+        return k;
+      }
+      return "other";
+    }
+
+    function updateStats() {
+      const keys = Object.keys(RESOURCE_DATA);
+      document.getElementById("s-covered").textContent = keys.length;
+
+      const counts = { oil: 0, gas: 0, gold: 0, uranium: 0, phosphates: 0, diamonds: 0 };
+      let multi = 0;
+
+      keys.forEach(iso => {
+        const d = RESOURCE_DATA[iso];
+        if (counts[d.primary] !== undefined) counts[d.primary] += 1;
+        if (d.resources.length > 1) multi += 1;
+      });
+
+      let topLabel = "-";
+      let topCount = 0;
+      Object.keys(counts).forEach(k => {
+        if (counts[k] > topCount) {
+          topCount = counts[k];
+          topLabel = titleCaseCategory(k);
+        }
+      });
+
+      document.getElementById("s-top").textContent = topLabel + " (" + topCount + ")";
+      document.getElementById("s-multi").textContent = multi;
+    }
+
+    const svg = d3.select("#map");
+    const tooltip = d3.select("#tooltip");
+    const detailEmpty = document.getElementById("detail-empty");
+    const detailContent = document.getElementById("detail-content");
+    const width = 980;
+    const height = 760;
+
+    let activeFilter = "all";
+    let selectedCountryPath = null;
+    let selectedCountryIso = "";
+    let countrySelection = null;
+
+    function setDetail(iso, feature) {
+      const country = COUNTRY_NAMES[iso] || (feature && feature.properties && feature.properties.name) || "Unknown";
+      const d = getCountryData(iso);
+      const category = d ? titleCaseCategory(d.primary) : "Other";
+      const resources = d ? d.resources : ["No mapped resource data"];
+      const note = d ? d.note : "No mapped profile yet for this country in the current dataset.";
+      const isoLabel = iso || "N/A";
+
+      const tagsHtml = resources.map(m => "<span class='chip'>" + m + "</span>").join("");
+      const sourceKeys = [d && d.primary ? d.primary : "other"].concat(resources.map(resourceKey));
+      const uniqueSourceKeys = sourceKeys.filter((k, i, arr) => arr.indexOf(k) === i);
+      const sourceLinksHtml = uniqueSourceKeys.map(k => {
+        const src = SOURCE_INDEX[k] || SOURCE_INDEX.other;
+        return "<a class='source-link' href='" + src.url + "' target='_blank' rel='noopener noreferrer'>" + src.label + "</a>";
+      }).join("");
+
+      detailEmpty.style.display = "none";
+      detailContent.style.display = "block";
+      detailContent.innerHTML =
+        "<div class='detail-head'>" +
+          "<button class='detail-close' id='detail-close' aria-label='Close detail panel'>&times;</button>" +
+          "<h2>" + country + "</h2>" +
+          "<span class='detail-tag'>Primary: " + category + "</span>" +
+        "</div>" +
+        "<div class='detail-body'>" +
+          "<div class='detail-row'><span>ISO code</span><strong>" + isoLabel + "</strong></div>" +
+          "<div class='detail-row'><span>Category</span><strong>" + category + "</strong></div>" +
+          "<p class='detail-text'>" + note + "</p>" +
+          "<div class='chip-wrap'>" + tagsHtml + "</div>" +
+          "<div class='source-wrap'><p class='source-title'>Sources</p><div class='source-links'>" + sourceLinksHtml + "</div></div>" +
+        "</div>";
+
+      document.getElementById("detail-close").addEventListener("click", () => {
+        detailContent.style.display = "none";
+        detailEmpty.style.display = "block";
+        detailContent.innerHTML = "";
+        if (selectedCountryPath) {
+          selectedCountryPath.classed("selected", false);
+          selectedCountryPath = null;
+        }
+        selectedCountryIso = "";
+        applyFilter();
+      });
+    }
+
+    function applyFilter() {
+      if (!countrySelection) return;
+      countrySelection.attr("fill", d => {
+        const iso = getIsoFromId(d.id);
+        if (selectedCountryIso) {
+          return iso === selectedCountryIso ? getCountryColor(iso, "all") : COLORS.muted;
+        }
+        return getCountryColor(iso, activeFilter);
+      });
+
+      document.querySelectorAll(".fbtn").forEach(btn => {
+        btn.classList.toggle("on", btn.dataset.filter === activeFilter);
+      });
+    }
+
+    fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json")
+      .then(res => res.json())
+      .then(world => {
+        const countries = topojson.feature(world, world.objects.countries);
+        const africa = {
+          type: "FeatureCollection",
+          features: countries.features.filter(d => getIsoFromId(d.id))
+        };
+
+        const projection = d3.geoMercator().fitExtent([[10, 10], [width - 10, height - 10]], africa);
+        const path = d3.geoPath().projection(projection);
+
+        countrySelection = svg.selectAll("path")
+          .data(africa.features)
+          .join("path")
+          .attr("class", "country")
+          .attr("d", path)
+          .attr("fill", d => getCountryColor(getIsoFromId(d.id), activeFilter))
+          .on("mouseover", (event, d) => {
+            const iso = getIsoFromId(d.id);
+            const country = COUNTRY_NAMES[iso] || (d.properties && d.properties.name) || "Unknown";
+            const info = getCountryData(iso);
+            const category = info ? titleCaseCategory(info.primary) : "Other";
+            tooltip.style("opacity", 1).html("<strong>" + country + "</strong><br/>" + category);
+          })
+          .on("mousemove", event => {
+            tooltip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY + 12) + "px");
+          })
+          .on("mouseout", () => {
+            tooltip.style("opacity", 0);
+          })
+          .on("click", function(event, d) {
+            const iso = getIsoFromId(d.id);
+            if (selectedCountryPath) selectedCountryPath.classed("selected", false);
+            selectedCountryPath = d3.select(this);
+            selectedCountryIso = iso;
+            selectedCountryPath.classed("selected", true);
+            applyFilter();
+            setDetail(iso, d);
+          });
+
+        document.querySelectorAll(".fbtn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            activeFilter = btn.dataset.filter || "all";
+            selectedCountryIso = "";
+            if (selectedCountryPath) {
+              selectedCountryPath.classed("selected", false);
+              selectedCountryPath = null;
+            }
+            detailContent.style.display = "none";
+            detailEmpty.style.display = "block";
+            detailContent.innerHTML = "";
+            applyFilter();
+          });
+        });
+
+        updateStats();
+      });
+  </script>
+</body>
+</html>

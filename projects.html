@@ -8,6 +8,41 @@
     <title>Projects</title>
     <link rel="stylesheet" href="./style.css">
     <link rel="icon" type="image/jpg" href="/img/globe.jpg">
+    <style>
+        .project-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .project-filter {
+            appearance: none;
+            border: 1px solid rgba(17, 24, 39, 0.18);
+            background: #fff;
+            color: #374151;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .project-filter:hover {
+            border-color: rgba(17, 24, 39, 0.4);
+            color: #111827;
+        }
+
+        .project-filter.on {
+            background: #111827;
+            border-color: #111827;
+            color: #fff;
+        }
+
+        .other-projects-grid {
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 
 <body>
@@ -104,48 +139,68 @@
         </article>
         </section><br>
         <h2>Other projects</h2><br>
-        <section class="articles-flex">
-        <article>
+        <div class="project-filters" aria-label="Filter other projects">
+            <button type="button" class="project-filter on" data-category="all">All</button>
+            <button type="button" class="project-filter" data-category="geopolitics">Geopolitics</button>
+            <button type="button" class="project-filter" data-category="trade">Trade</button>
+            <button type="button" class="project-filter" data-category="technology">Technology</button>
+        </div><br>
+        <section class="articles-flex other-projects-grid">
+        <article data-category="technology">
             <a href="/projects/africa_tech_policy.html">African Cyber and AI policies</a><br><br>
                 <img
                     src="img/project1.png"
                     alt="African map showing cyber and AI policies"
                     width="300px">
         </article>
-        <article>
+        <article data-category="technology">
             <a href="/projects/africa_internet_shutdowns.html">Internet shutdowns in Africa</a><br><br>
                 <img
                     src="img/project2.png"
                     alt="African map showing internet shutdowns"
                     width="300px"><br><br>
         </article>
-                <article>
+        <article data-category="geopolitics">
             <a href="/projects/africa_democracy.html">Democracy in Africa</a><br><br>
                 <img
                     src="img/project3.png"
                     alt="African map showing democratic scoring"
                     height="500px"><br><br>
         </article>
-
-                </article>
-        </section>
-        <section class="articles-flex">
-        <article>
+        <article data-category="trade">
             <a href="/projects/africa_fatf.html">Financial Action Taskforce Increased Monitoring in Africa</a><br><br>
                 <img
                     src="img/project4.png"
                     alt="African map showing FATF increased monitoring"
                     height="500px"><br><br>
         </article>
-        <article>
+        <article data-category="geopolitics">
             <a href="/projects/africa_un_peacekeeping.html">UN Peacekeeping Missions in Africa</a><br><br>
                 <img
                     src="img/project5.png"
                     alt="African map showing UN Peacekeeping missions"
                     height="500px"><br><br>
         </article>
-                <article>
-        <!-- placeholder -->
+        <article data-category="trade">
+            <a href="/projects/africa_afcfta_implementation.html">AfCFTA Implementation in Africa</a><br><br>
+                <img
+                    src="img/project4.png"
+                    alt="African map showing AfCFTA implementation status"
+                    width="300px"><br><br>
+        </article>
+        <article data-category="trade">
+            <a href="/projects/africa_critical_minerals.html">Critical Minerals in Africa</a><br><br>
+                <img
+                    src="img/project5.png"
+                    alt="African map showing critical minerals by country"
+                    width="300px"><br><br>
+        </article>
+        <article data-category="trade">
+            <a href="/projects/africa_energy_resources.html">Oil, Gas and Strategic Resources in Africa</a><br><br>
+                <img
+                    src="img/project2.png"
+                    alt="African map showing oil, gas, gold and strategic resources"
+                    width="300px"><br><br>
         </article>
         </section>
         </section>
@@ -163,5 +218,26 @@
             <p style="text-align:center;">© Michaela Gyasi-Agyei 2026</p>
         </section><br>
 <script src="script.js"></script>
+<script>
+    const projectFilterButtons = document.querySelectorAll('.project-filter');
+    const otherProjectCards = document.querySelectorAll('.other-projects-grid article[data-category], .articles-flex article[data-category]');
+
+    function applyProjectFilter(category) {
+        otherProjectCards.forEach(card => {
+            const matches = category === 'all' || card.dataset.category === category;
+            card.style.display = matches ? '' : 'none';
+        });
+
+        projectFilterButtons.forEach(button => {
+            button.classList.toggle('on', button.dataset.category === category);
+        });
+    }
+
+    projectFilterButtons.forEach(button => {
+        button.addEventListener('click', () => applyProjectFilter(button.dataset.category));
+    });
+
+    applyProjectFilter('all');
+</script>
 </body>
 </html>

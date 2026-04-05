@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>African Pageant Wins</title>
+<link rel="stylesheet" href="./style.css">
+<link rel="icon" type="image/jpg" href="/img/globe.jpg">
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap");
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"DM Sans",system-ui,sans-serif;color:#1a1a2e;background:#fff}
+.page-hero{background:#0b1120;padding:40px 32px;border-radius:18px;margin:16px 16px 0;position:relative;overflow:hidden}
+.page-hero::before{content:"";position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(192,57,43,.4) 0%,transparent 70%);pointer-events:none}
+.page-hero h1{font-family:"Playfair Display",Georgia,serif;font-size:2rem;color:#fff;position:relative;z-index:1}
+.page-hero p{font-size:.9rem;color:rgba(255,255,255,.6);margin-top:8px;font-weight:300;position:relative;z-index:1}
+.map-section{display:grid;grid-template-columns:1fr;gap:0;margin:24px 16px}
+@media(min-width:900px){.map-section{grid-template-columns:1fr 320px;gap:20px;align-items:start}}
+.controls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;margin-top:16px}
+.fbtn{padding:5px 12px;font-size:12px;border:1px solid rgba(0,0,0,.15);border-radius:4px;background:#fff;color:#6b7280;cursor:pointer;font-family:"DM Sans",sans-serif;transition:all .2s}
+.fbtn.on{background:#0b1120;border-color:#0b1120;color:#fff;font-weight:500}
+.fbtn:hover:not(.on){background:#f4f5f7;color:#0b1120}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280}
+.ld{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+.map-wrap{position:relative;border:1px solid rgba(0,0,0,.08);border-radius:12px;overflow:hidden;background:#f4f5f7;max-height:520px}
+.map-wrap svg{display:block;width:100%;height:auto;max-height:520px}
+.country{stroke:#fff;stroke-width:.5;cursor:pointer;transition:opacity .12s}
+.country:hover{opacity:.78;stroke-width:1.2}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.sc{background:#f4f5f7;border-radius:8px;padding:10px 12px}
+.sn{font-size:18px;font-weight:500;color:#0b1120;font-family:"Playfair Display",serif}
+.sl{font-size:10px;color:#6b7280;margin-top:2px}
+.detail-col{position:sticky;top:80px}
+.detail-panel{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;overflow:hidden;min-height:200px}
+.detail-empty{padding:32px 20px;text-align:center}
+.detail-empty-icon{width:48px;height:48px;border-radius:50%;background:#f4f5f7;margin:0 auto 12px;display:flex;align-items:center;justify-content:center}
+.detail-empty p{font-size:13px;color:#6b7280;font-weight:300}
+.detail-head{padding:20px;background:#0b1120;position:relative}
+.detail-head h2{font-family:"Playfair Display",serif;font-size:1.3rem;color:#fff;margin-bottom:6px}
+.detail-close{position:absolute;top:12px;right:14px;background:rgba(255,255,255,.15);border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;line-height:1;font-family:sans-serif}
+.detail-close:hover{background:rgba(255,255,255,.25)}
+.status-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;margin-bottom:6px;font-family:"DM Sans",sans-serif;background:rgba(107,174,214,.3);color:#d6ebfb}
+.detail-body{padding:16px 20px}
+.detail-section{margin-bottom:14px}
+.detail-section-label{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;color:#6b7280}
+.detail-section p{font-size:13px;color:#374151;line-height:1.7;font-weight:300}
+.detail-link,.detail-link:link,.detail-link:visited,.detail-link:active{display:inline-block;padding:8px 16px;background:#0b1120;color:#fff!important;text-decoration:none;border-radius:4px;font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;margin-top:8px;transition:background .2s}
+.detail-link:hover{background:#c0392b}
+.detail-link:hover,.detail-link:hover:visited{color:#fff!important}
+.hover-hint{font-size:11px;color:#6b7280;margin-top:8px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="page-hero">
+  <h1>Big Four Pageant Wins in Africa</h1>
+  <p>Miss Universe, Miss World, Miss International and Miss Earth winners by country.</p>
+</div>
+
+<div class="map-section">
+  <div class="map-col">
+    <div class="controls">
+      <button class="fbtn on" data-f="all">All countries</button>
+      <button class="fbtn" data-f="winners">Winning countries</button>
+      <button class="fbtn" data-f="top">Top performers (3+)</button>
+    </div>
+    <div class="legend">
+      <div class="li"><div class="ld" style="background:#08306b"></div>5+ wins</div>
+      <div class="li"><div class="ld" style="background:#2171b5"></div>3 to 4 wins</div>
+      <div class="li"><div class="ld" style="background:#6baed6"></div>2 wins</div>
+      <div class="li"><div class="ld" style="background:#c6dbef"></div>1 win</div>
+      <div class="li"><div class="ld" style="background:#e5e7eb"></div>No wins</div>
+    </div>
+    <div class="map-wrap" id="map-wrap">
+      <svg id="svg" aria-label="Map of Big Four pageant wins in Africa"></svg>
+    </div>
+    <p class="hover-hint">Click a country to see details</p>
+    <div class="stats">
+      <div class="sc"><div class="sn" id="s-winners">-</div><div class="sl">Countries with at least 1 win</div></div>
+      <div class="sc"><div class="sn" id="s-total">-</div><div class="sl">Total recorded wins</div></div>
+      <div class="sc"><div class="sn" id="s-top">-</div><div class="sl">Top country</div></div>
+    </div>
+  </div>
+
+  <div class="detail-col">
+    <div class="detail-panel" id="detail-panel">
+      <div class="detail-empty" id="detail-empty">
+        <div class="detail-empty-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm1 12H9v-2h2v2zm0-4H9V6h2v4z" fill="#b4b2a9"/></svg>
+        </div>
+        <p>Click any country to see its pageant performance.</p>
+      </div>
+      <div id="detail-content" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+const AFRICAN_ISO={12:"DZA",24:"AGO",204:"BEN",72:"BWA",854:"BFA",108:"BDI",132:"CPV",120:"CMR",140:"CAF",148:"TCD",174:"COM",178:"COG",180:"COD",384:"CIV",262:"DJI",818:"EGY",226:"GNQ",232:"ERI",748:"SWZ",231:"ETH",266:"GAB",270:"GMB",288:"GHA",324:"GIN",624:"GNB",404:"KEN",426:"LSO",430:"LBR",434:"LBY",450:"MDG",454:"MWI",466:"MLI",478:"MRT",480:"MUS",504:"MAR",508:"MOZ",516:"NAM",562:"NER",566:"NGA",646:"RWA",678:"STP",686:"SEN",690:"SYC",694:"SLE",706:"SOM",710:"ZAF",728:"SSD",729:"SDN",732:"ESH",834:"TZA",768:"TGO",788:"TUN",800:"UGA",894:"ZMB",716:"ZWE"};
+const AFRICAN_IDS=new Set(Object.keys(AFRICAN_ISO).map(Number));
+
+const PAGEANTS={
+  ZAF:{name:"South Africa",wins:6},
+  NGA:{name:"Nigeria",wins:3},
+  NAM:{name:"Namibia",wins:2},
+  BWA:{name:"Botswana",wins:1},
+  CIV:{name:"Cote d'Ivoire",wins:1},
+  ETH:{name:"Ethiopia",wins:1},
+  TUN:{name:"Tunisia",wins:1},
+  EGY:{name:"Egypt",wins:1},
+  MAR:{name:"Morocco",wins:1}
+};
+
+const COL={none:"#e5e7eb",one:"#c6dbef",two:"#6baed6",three:"#2171b5",five:"#08306b"};
+const COL_FADED="#dfe6ee";
+
+let activeFilter="all";
+let selectedIso=null;
+
+function category(d){
+  if(!d||!d.wins) return "none";
+  if(d.wins>=5) return "five";
+  if(d.wins>=3) return "three";
+  if(d.wins>=2) return "two";
+  return "one";
+}
+
+function getFill(iso){
+  const d=PAGEANTS[iso];
+  const c=category(d);
+  if(!d) return COL.none;
+  if(activeFilter==="all") return COL[c];
+  if(activeFilter==="winners") return COL[c];
+  if(activeFilter==="top") return d.wins>=3?COL[c]:COL.none;
+  return COL[c];
+}
+
+function closeDetail(){
+  document.getElementById("detail-content").style.display="none";
+  document.getElementById("detail-empty").style.display="block";
+  if(selectedIso){d3.select(`[data-iso="${selectedIso}"]`).attr("stroke","#fff").attr("stroke-width","0.5");}
+  selectedIso=null;
+}
+
+function renderDetail(iso,geoName){
+  const d=PAGEANTS[iso];
+  const content=document.getElementById("detail-content");
+  const empty=document.getElementById("detail-empty");
+  empty.style.display="none";
+  content.style.display="block";
+
+  if(!d){
+    content.innerHTML=`
+      <div class="detail-head">
+        <button class="detail-close" id="dcb">&#x2715;</button>
+        <h2>${geoName}</h2>
+        <span class="status-pill">No recorded Big Four wins</span>
+      </div>
+      <div class="detail-body">
+        <div class="detail-section">
+          <div class="detail-section-label">Status</div>
+          <p>This country has no recorded wins for Miss Universe, Miss World, Miss International, and Miss Earth.</p>
+        </div>
+      </div>`;
+    document.getElementById("dcb").addEventListener("click",closeDetail);
+    return;
+  }
+
+  content.innerHTML=`
+    <div class="detail-head">
+      <button class="detail-close" id="dcb">&#x2715;</button>
+      <h2>${d.name}</h2>
+      <span class="status-pill">${d.wins} total win${d.wins===1?"":"s"}</span>
+    </div>
+    <div class="detail-body">
+      <div class="detail-section">
+        <div class="detail-section-label">Performance</div>
+        <p>${d.name} has recorded <strong>${d.wins}</strong> Big Four pageant win${d.wins===1?"":"s"}.</p>
+      </div>
+      <a class="detail-link" href="https://en.wikipedia.org/wiki/Big_Four_(beauty_pageants)" target="_blank" rel="noopener noreferrer">View reference</a>
+    </div>`;
+
+  document.getElementById("dcb").addEventListener("click",closeDetail);
+}
+
+document.querySelectorAll(".fbtn").forEach(b=>{
+  b.addEventListener("click",function(){
+    document.querySelectorAll(".fbtn").forEach(x=>x.classList.remove("on"));
+    this.classList.add("on");
+    activeFilter=this.dataset.f;
+    d3.selectAll(".country").attr("fill",function(){return getFill(d3.select(this).attr("data-iso"));});
+  });
+});
+
+fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+  .then(r=>r.json())
+  .then(world=>{
+    const all=topojson.feature(world,world.objects.countries);
+    const african=all.features.filter(f=>AFRICAN_IDS.has(+f.id));
+    const proj=d3.geoMercator().fitExtent([[12,12],[560,620]],{type:"FeatureCollection",features:african});
+    const path=d3.geoPath().projection(proj);
+
+    const bbox=african.reduce((a,f)=>{
+      const b=path.bounds(f);
+      return {x0:Math.min(a.x0,b[0][0]),y0:Math.min(a.y0,b[0][1]),x1:Math.max(a.x1,b[1][0]),y1:Math.max(a.y1,b[1][1])};
+    },{x0:Infinity,y0:Infinity,x1:-Infinity,y1:-Infinity});
+
+    const vw=bbox.x1-bbox.x0+24;
+    const vh=bbox.y1-bbox.y0+24;
+    const svg=d3.select("#svg").attr("viewBox",`${bbox.x0-12} ${bbox.y0-12} ${vw} ${vh}`).style("width","100%").style("height","auto");
+
+    svg.selectAll(".country")
+      .data(african)
+      .join("path")
+      .attr("class","country")
+      .attr("data-iso",f=>AFRICAN_ISO[+f.id]||"")
+      .attr("d",path)
+      .attr("fill",f=>getFill(AFRICAN_ISO[+f.id]))
+      .on("click",(e,f)=>{
+        const iso=AFRICAN_ISO[+f.id];
+        if(!iso) return;
+        if(selectedIso){d3.select(`[data-iso="${selectedIso}"]`).attr("stroke","#fff").attr("stroke-width","0.5");}
+        selectedIso=iso;
+        d3.select(e.currentTarget).attr("stroke","#0b1120").attr("stroke-width","1.8");
+        renderDetail(iso,f.properties.name);
+      });
+
+    const winnerEntries=Object.entries(PAGEANTS);
+    const totalWins=winnerEntries.reduce((sum,[,d])=>sum+d.wins,0);
+    const top=winnerEntries.reduce((acc,[iso,d])=>d.wins>acc.wins?{iso:iso,name:d.name,wins:d.wins}:acc,{iso:"",name:"-",wins:0});
+
+    document.getElementById("s-winners").textContent=winnerEntries.length;
+    document.getElementById("s-total").textContent=totalWins;
+    document.getElementById("s-top").textContent=top.name;
+  })
+  .catch(()=>{
+    document.getElementById("map-wrap").innerHTML="<p style='padding:2rem;font-size:13px;color:#6b7280'>Map failed to load.</p>";
+  });
+</script>
+
+</body>
+</html>
